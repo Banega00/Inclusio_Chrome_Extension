@@ -1,4 +1,8 @@
 const css = `
+*{
+    box-sizing: border-box;
+}
+
 .extension-header {
     overflow: hidden;
     background-color: white;
@@ -18,7 +22,7 @@ const css = `
 }
 
 .neutral{
-    background-color: gray;
+    background-color: orange;
 }
 
 .no-alt-text{
@@ -30,6 +34,26 @@ const css = `
     padding: 5px;
     font-size: 1.4em;
 }
+
+.galleryDiv{
+    position:fixed;
+    padding:0;
+    margin:0;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    background:rgba(0,0,0,0.5);
+}
+
+.galleryDiv.hidden{
+    display:none;
+}
+
+a.disabled {
+    pointer-events: none;
+    cursor: default;
+  }
 `
 
 chrome.runtime.onMessage.addListener(
@@ -71,12 +95,12 @@ function extensionStatusChange(extStatus){
             wrapperControls.classList.add('wrapper-controls')
             let imageStatusMessage = ''
             const altText = img.alt ?? '';
-            if(altText.trim()){
+            if(!altText.trim()){
                 wrapper.classList.add('no-alt-text')
                 imageStatusMessage = 'Alt text missing'
             }else{
                 wrapper.classList.add('neutral')
-                imageStatusMessage = 'Alt text available'
+                imageStatusMessage =  altText;
             }
 
             parent.replaceChild(wrapper, img);
@@ -84,6 +108,42 @@ function extensionStatusChange(extStatus){
 
             wrapperControls.innerHTML = `<div>${imageStatusMessage}</div>`
             wrapper.appendChild(wrapperControls)
+
+            wrapper.addEventListener('click', (event) => {
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                toggleGalery(true)
+            })
+
+            setTimeout(()=>{
+                const parentATag = wrapper.closest('a')
+                if(parentATag) parentATag.href = 'javascript:void(0)'
+            },0)
         })
     }
+}
+
+function toggleGalery(show){
+    let galleryDiv = document.querySelector('.galleryDiv');
+
+    if(!galleryDiv){
+        //gallery div not yet injected
+        galleryDiv = document.createElement('div');
+        galleryDiv.classList.add('galleryDiv')
+        const body = document.querySelector('body')
+        body.appendChild(galleryDiv)
+
+        galleryDiv.addEventListener('click', () => {
+            toggleGalery(false)
+        })
+    }else{
+        //gallery div already injected
+        if(show){
+            galleryDiv.classList.remove('hidden')
+        }else{
+            galleryDiv.classList.add('hidden')
+        }
+    }
+    
+    
 }
