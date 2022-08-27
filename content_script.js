@@ -5,9 +5,105 @@ const editIconSvg = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewB
   </g>
 </g>
 </svg>`
-
+const prevImgSvg = `<svg version="1.1" id="Layer_1" xmlns:x="&ns_extend;" xmlns:i="&ns_ai;" xmlns:graph="&ns_graphs;"
+xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+width="24px" height="24px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve">
+<metadata>
+    <sfw xmlns="&ns_sfw;">
+        <slices></slices>
+        <sliceSourceBounds width="505" height="984" bottomLeftOrigin="true" x="0" y="-120">
+        </sliceSourceBounds>
+    </sfw>
+</metadata>
+<g>
+    <g>
+        <g>
+            <path d="M12,24C5.4,24,0,18.6,0,12S5.4,0,12,0s12,5.4,12,12S18.6,24,12,24z M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10
+S17.5,2,12,2z" />
+        </g>
+    </g>
+    <g>
+        <g>
+            <path d="M13,16c-0.3,0-0.5-0.1-0.7-0.3l-3-3c-0.4-0.4-0.4-1,0-1.4l3-3c0.4-0.4,1-0.4,1.4,0s0.4,1,0,1.4L11.4,12l2.3,2.3
+c0.4,0.4,0.4,1,0,1.4C13.5,15.9,13.3,16,13,16z" />
+        </g>
+    </g>
+</g>
+</svg>`
 const inclusioPinkColor = '#ca3f64';
 
+const galleryCSS= `
+.galleryDiv .close-btn {
+    position: fixed;
+    top: 5%;
+    right: 5%;
+    cursor: pointer;
+    margin-top: 10vh;
+}
+
+.galleryDiv .close-btn svg {
+    fill: white;
+    width: 64px;
+    height: 64px;
+    color: white;
+}
+
+.galleryDiv .img-div {
+    width: 17vw;
+    height: 17vw;
+
+    min-width: 170px;
+    min-height: 170px;
+}
+
+.galleryDiv .img-div img {
+    width: 100%;
+    height: 100%;
+}
+
+.galleryDiv .img-div.main {
+    width: 30vw;
+    height: 30vw;
+
+    min-width: 300px;
+    min-height: 300px;
+}
+
+.galleryDiv .carousel {
+    width: 100%;
+    display: flex;
+    margin: auto;
+    align-items: center;
+    justify-content: center;
+}
+
+.galleryDiv .carousel>* {
+    margin: 0px 20px;
+}
+
+.galleryDiv .text-area-div>div {
+    padding-top: 20px;
+    margin: auto;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
+
+.galleryDiv .text-area-div>div textarea {
+    width: 30vw;
+}
+
+.galleryDiv .next-img-svg-div svg, .prev-img-svg-div svg{
+    color: white;
+    fill: white;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+}
+
+.galleryDiv .next-img-svg-div{
+    transform: rotateY(180deg);
+}`
 const css = `
 *{
     box-sizing: border-box;
@@ -112,104 +208,16 @@ body{
     position:fixed;
     padding:0;
     margin:0;
+    padding-top: 15vh;
     top:0;
     left:0;
     width: 100%;
     height: 100%;
     background:rgba(0,0,0,0.75);
-    padding-top: 120px;
     overflow: auto;
 }
 
-.galleryDiv.hidden{
-    display:none;
-}
-
-a.disabled {
-    pointer-events: none;
-    cursor: default;
-  }
-
-
-.galleryDiv .carousel-main-container{
-    min-width: 500px;
-    min-height: 500px;
-    margin: auto;
-    display: flex;
-    
-}
-
-.galleryDiv .carousel-main-container .main-div{
-    display: flex;
-    flex-direction: column;
-    margin-right: 10px;
-}
-
-.galleryDiv .carousel-main-container .main-div .controls-div{
-    padding:10px;
-}
-
-.galleryDiv .carousel-main-container .other-images-cotainer{
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.galleryDiv .carousel-main-container .image-div{
-    width: 500px;
-    height: 500px;
-    margin-bottom: 10px;
-}
-
-.galleryDiv .carousel-main-container .image-div img{
-    width: 100%;
-    height: 100%;
-}
-
-.galleryDiv .carousel-main-container .other-images-cotainer > div{
-    margin-right: 10px;
-    margin-bottom: 10px;
-}
-
-.galleryDiv .bg-div{
-    margin: auto;
-    background-color: rgba(0,0,0,0.65);
-    height: 100vh;
-    width: 100vw;
-    padding: 50px;
-}
-
-.galleryDiv .image-container[selected="true"]{
-    border: 5px solid blue;
-}
-
-.galleryDiv .image-container{
-    cursor: pointer;
-    width: 100px;
-    height: 100px;
-
-}
-
-.galleryDiv .image-container img{
-    width: 100%;
-    height: 100%;
-}
-
-.galleryDiv .image-counting-div{
-    color:white;
-    font-size: 1.2em;
-}
-
-.galleryDiv .control-btns{
-    display: flex;
-    justify-content: space-between;
-    padding-top: 20px;
-}
-
-.galleryDiv .control-btns button{
-    font-size: 1.5em;
-    font-weight: bold;
-    width: 20%;
-}
+${galleryCSS}
 `
 
 chrome.runtime.onMessage.addListener(
@@ -345,7 +353,7 @@ function extensionStatusChange(extStatus){
                     wrapper.addEventListener('click', (event) => {
                         event.stopPropagation();
                         event.stopImmediatePropagation();
-                        // toggleGalery(true)
+                        toggleGallery(true)
                     })
 
                     setTimeout(() => {
@@ -405,7 +413,7 @@ function changeImageAltTextInStorage(imgSrc, newAltText){
 
 function countOccurrencesOfImgSrc(array, ){ return arr.reduce((a, v) => (v === val ? a + 1 : a), 0)}
 
-function toggleGalery(show){
+function toggleGallery(show){
     let galleryDiv = document.querySelector('.galleryDiv');
 
     if(!galleryDiv){
@@ -417,17 +425,17 @@ function toggleGalery(show){
 
         injectGalleryContent(galleryDiv);
         
-        setTimeout(injectGalleryJavascript,0)
+        // setTimeout(injectGalleryJavascript,0)
 
-        const allImages = document.querySelectorAll('img')
-        const allImagesSourcesAndAlts = Array.from(allImages).map(img => {
-            return {src: img.src, alt: img.alt}
-        });
+        // const allImages = document.querySelectorAll('img')
+        // const allImagesSourcesAndAlts = Array.from(allImages).map(img => {
+        //     return {src: img.src, alt: img.alt}
+        // });
 
-        allImagesSourcesAndAlts.filter(obj =>{
-        })
+        // allImagesSourcesAndAlts.filter(obj =>{
+        // })
 
-        setTimeout(injectImagesIntoGallery(allImagesSourcesAndAlts),1);
+        // setTimeout(injectImagesIntoGallery(allImagesSourcesAndAlts),1);
     }else{
         //gallery div already injected
         if(show){
@@ -478,7 +486,7 @@ function injectGalleryJavascript() {
     //     })
     // })
 
-    closeGalleryBtn.addEventListener('click', () => toggleGalery(false))
+    closeGalleryBtn.addEventListener('click', () => toggleGallery(false))
 
     selectedImage.src = document.querySelector('.image-container[selected="true"] img').src
     totalNumberSpan.innerHTML = allImages.length;
@@ -501,24 +509,32 @@ function selectImage(imageContainer, index) {
 }
 
 function injectGalleryContent(galleryDiv){
-    galleryDiv.innerHTML = `<main class="carousel-main-container">
-    <div class="main-div">
-        <div class="image-div">
-            <img id="selectedImage" src="https://picsum.photos/500/500" alt="">
-        </div>
-        <div class="controls-div">
-            <div class="image-counting-div">Image <span id="image-number">1</span>/<span id="total-number"></span></div>
-            <textarea name="" id="image-alt-textarea" cols="30" rows="4"></textarea>
-            <div class="control-btns">
-                <button type="button" id="saveAltText-btn" class="btn btn-primary">Save</button>
-                <button type="button" id="closeGallery-btn" class="btn btn-primary">Close</button>
-                <button type="button" id="nextImg-btn" class="btn btn-primary"><</button>
-                <button type="button" id="previousImg-btn" class="btn btn-primary">></button>
-            </div>
-        </div>
+    galleryDiv.innerHTML = `<div class="carousel">
+    <div class="img-div prev"><img src="https://picsum.photos/500/500" alt=""></div>
+    <div class="prev-img-svg-div">
+        ${prevImgSvg}
     </div>
-    <div class="other-images-cotainer">
+
+    <div class="img-div main"><img src="https://picsum.photos/500/500" alt=""></div>
+
+    <div class="next-img-svg-div">
+        ${prevImgSvg}
     </div>
-</main>
+    <div class="img-div next"><img src="https://picsum.photos/500/500" alt=""></div>
+</div>
+<div class="text-area-div">
+    <div>
+        <textarea name="" id="" cols="30" rows="10"></textarea>
+    </div>
+</div>
+<div class="close-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+
+</div>
     `
 }
+
