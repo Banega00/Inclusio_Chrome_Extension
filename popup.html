@@ -6,18 +6,28 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="bootstrap-5.0.2-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="popup-style.css">
     <title>Document</title>
 </head>
 
 <body>
-    DOBREDOSLI
+    <header class="title-div">
+        <img class="popup-logo" src="assets/logo.svg" alt="">
+        <span class="title-div-1">inclusio</span>
+        <span class="title-div-2">extension</span>
+    </header>
 
+    
     <div class="form-check form-switch">
         <input class="form-check-input" type="checkbox" id="ext-status-switch">
-        <label class="form-check-label" for="flexSwitchCheckChecked">Checked switch checkbox input</label>
+        <label class="form-check-label" for="flexSwitchCheckChecked">Addon is <span id="addon-status"></span></label>
     </div>
+    
+    <hr>
 
-
+    <div class="sites-container">
+        <div class="site">http://kurac.palac.com</div>
+    </div>
     <script src="script.js"></script>
     <script type="text/javascript" src="./bootstrap-5.0.2-dist/js/bootstrap.min.js"></script>
 </body>

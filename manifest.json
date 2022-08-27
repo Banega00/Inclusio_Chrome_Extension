@@ -4,7 +4,8 @@
   "description": "Inclusion extension",
   "permissions": [
     "storage",
-    "tabs"
+    "tabs",
+    "activeTab"
   ],
   "content_scripts": [
     {

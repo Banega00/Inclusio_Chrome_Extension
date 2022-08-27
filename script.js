@@ -1,30 +1,109 @@
+function getCurrentTab() {
+    return new Promise(function (resolve, reject) {
+        chrome.tabs.query({
+            active: true,               // Select active tabs
+            lastFocusedWindow: true     // In the current window
+        }, function (tabs) {
+            resolve(tabs[0]);
+        });
+    });
+}
+
+
 const extStatusSwitch = document.getElementById('ext-status-switch')
 if(extStatusSwitch){
     extStatusSwitch.addEventListener('change', function(event){
-        chrome.storage.sync.get('ext-status', function (result) {
-            const extStatus = result['ext-status'];
-            if(extStatus == undefined){
-                chrome.storage.sync.set({'ext-status': true }, getAndSendExtStatus)
-            }else{
-                chrome.storage.sync.set({'ext-status': !extStatus }, getAndSendExtStatus)
-            }
-        })
+
+        getCurrentTab().then(function (tab) {
+            const currentPageUrl = tab.url;
+
+            chrome.storage.sync.get('ext-status', function (result) {
+                let extStatus = result['ext-status'];
+    
+                if(extStatus == undefined){ //extension status is totally empty
+                    const currentPageUrl = currentPageUrl;
+                    extStatus = {
+                        [currentPageUrl]: true
+                    }
+                    
+                    chrome.storage.sync.set({'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
+                    showExtStatus(true);
+                }else{
+                    if(typeof extStatus != 'object') extStatus = {};
+    
+                    const currentPageExtStatus = extStatus[currentPageUrl];
+    
+                    if(currentPageExtStatus == undefined){
+    
+                        extStatus[currentPageUrl] = true;
+                        chrome.storage.sync.set({'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
+                        showExtStatus(true)
+                        return;
+                    }else{
+                        const newStatus = event.target.checked
+                        extStatus[currentPageUrl] = newStatus
+                        chrome.storage.sync.set({'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
+                        showExtStatus(newStatus);
+                        return;
+                    }
+    
+                }
+            })
+
+        });
     })
 }else{
     console.error("EXT SWITCH NOT FOUND")
 }
 
-getAndSendExtStatus()
+function showExtStatus(status){
+    const extStatusDiv = document.getElementById('addon-status');
 
-function getAndSendExtStatus(){
+    if(status){
+        extStatusDiv.innerHTML = 'Active';
+    }else{
+        extStatusDiv.innerHTML = 'Unactive';
+    }
+}
+
+
+getCurrentTab().then(function (tab) {
+    const currentPageUrl = tab.url;
+    getAndSendExtStatus(currentPageUrl)
+})
+
+//get status of extension on current page and sends it to content script
+function getAndSendExtStatus(currentPageUrl){
     chrome.storage.sync.get('ext-status', function (result) {
         const extStatus = result['ext-status']
         if(extStatus != undefined){
-            document.getElementById('ext-status-switch').checked=extStatus;
-    
-            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                chrome.tabs.sendMessage(tabs[0].id, { message: 'extension_status', extStatus });
-            });
+
+            const currentPageStatus = extStatus[currentPageUrl];
+
+            if(currentPageStatus != undefined){
+                document.getElementById('ext-status-switch').checked=currentPageStatus;
+        
+                sendExtensionStatusToContentScript(currentPageStatus);
+                showExtStatus(currentPageStatus);
+            }else{
+
+                sendExtensionStatusToContentScript(false);
+                showExtStatus(false);
+            }
+
+        }else{
+            sendExtensionStatusToContentScript(false);
+            showExtStatus(false)
         }
     })
 }
+
+function sendExtensionStatusToContentScript(status){
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        chrome.tabs.sendMessage(tabs[0].id, { message: 'extension_status', status });
+    });
+}
+
+// chrome.storage.sync.get('role', function (result) {
+    
+// })
