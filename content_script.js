@@ -179,6 +179,22 @@ chrome.runtime.onMessage.addListener(
     }
 )
 
+const debounce = (fn, delay) => {
+    let timeoutID; // Initially undefined
+
+    return function (...args) {
+
+        // cancel previously unexecuted timeouts
+        if (timeoutID) {
+            clearTimeout(timeoutID);
+        }
+
+        timeoutID = setTimeout(() => {
+            fn(...args);
+        }, delay)
+    }
+}
+
 function loadCSS(css) {
     var head = document.head || document.getElementsByTagName("head")[0];
     const style = document.createElement("style");
@@ -194,7 +210,7 @@ function trimQueryParamsFromUrl(url){
 function setAltTextOfImageArrayToStorage(imgArray) {
     const pageUrl = trimQueryParamsFromUrl(window.location.href);
 
-    chrome.storage.sync.get('alt_text', function (result) {
+    chrome.storage.local.get('alt_text', function (result) {
         let altTextObject = result.alt_text;
 
         if (!altTextObject) altTextObject = {};
@@ -210,14 +226,32 @@ function setAltTextOfImageArrayToStorage(imgArray) {
         })
 
         altTextObject[pageUrl] = currentPageAltText;
-        console.log(altTextObject)
         chrome.storage.local.set({'alt_text' : altTextObject})
     })
 }
 
+function getImageAltTextFromStorage(imgSrc){
+    const pageUrl = trimQueryParamsFromUrl(window.location.href);
+
+    return new Promise(function (resolve, reject) {
+        chrome.storage.local.get('alt_text', function (result) {
+            let altTextObject = result.alt_text;
+    
+            if(altTextObject){
+                if(altTextObject[pageUrl]){
+                    resolve(altTextObject[pageUrl][imgSrc])
+                }
+            }
+    
+            resolve(undefined)
+        })
+    });
+}
+
 function extensionStatusChange(extStatus){
     if(extStatus){
-
+        if(document.querySelector('.extension-header') && extStatus == true) return;
+        
         const body = document.querySelector('body')
         const header = document.createElement('div')
         header.innerHTML = '<div>Pozdrav brate</div>'
@@ -229,7 +263,7 @@ function extensionStatusChange(extStatus){
         const images = document.querySelectorAll('img');
 
         chrome.storage.sync.set({})
-        images.forEach(img=>{
+        images.forEach(img => {
             const parent = img.parentNode
             const wrapper = document.createElement('div')
             wrapper.classList.add('img-wrapper-div')
@@ -237,46 +271,86 @@ function extensionStatusChange(extStatus){
             const wrapperControls = document.createElement('div');
             wrapperControls.classList.add('wrapper-controls')
             let imageStatusMessage = ''
-            const altText = img.alt ?? '';
-            if(!altText.trim()){
-                wrapper.classList.add('no-alt-text')
-                imageStatusMessage = 'Alt text missing'
-            }else{
-                wrapper.classList.add('neutral')
-                imageStatusMessage =  altText;
-            }
-            parent.replaceChild(wrapper, img);
-            wrapper.appendChild(img);
 
-            wrapperControls.innerHTML = `
+            getImageAltTextFromStorage(img.src)
+                .then(storageAltText => {
+
+                    const altText = storageAltText ?? img.alt ?? '';
+                    if (!altText.trim()) {
+                        wrapper.classList.add('no-alt-text')
+                        imageStatusMessage = 'Alt text missing'
+                    } else {
+                        wrapper.classList.add('neutral')
+                        imageStatusMessage = altText;
+                    }
+                    parent.replaceChild(wrapper, img);
+                    wrapper.appendChild(img);
+
+                    wrapperControls.innerHTML = `
             <div class="img-alt-text-div">${imageStatusMessage}</div>
-            <div class="edit-input hidden"><input size="${img.alt.length}" type="text" value="${img.alt}"></div>
+            <div class="edit-input hidden"><input size="${altText.length}" type="text" value="${altText}"></div>
             <div class="edit-icon-div"> ${editIconSvg}</div>`
-            wrapper.appendChild(wrapperControls)
+                    wrapper.appendChild(wrapperControls)
 
-            //FOR OPENING GALLERY
-            wrapper.addEventListener('click', (event) => {
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                // toggleGalery(true)
-            })
+                    //FOR OPENING GALLERY
+                    wrapper.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
+                        // toggleGalery(true)
+                    })
 
-            setTimeout(()=>{
-                const parentATag = wrapper.closest('a')
-                if(parentATag) parentATag.href = 'javascript:void(0)'
+                    setTimeout(() => {
+                        const parentATag = wrapper.closest('a')
+                        if (parentATag) parentATag.href = 'javascript:void(0)'
 
-                wrapperControls.querySelector('.edit-icon-div').addEventListener('click', ()=>{
-                    
-                    wrapperControls.querySelector('.edit-input').classList.toggle('hidden');
-                    wrapperControls.querySelector('.img-alt-text-div').classList.toggle('hidden')
+                        const imageAltTextDiv = wrapperControls.querySelector('.img-alt-text-div')
+
+                        wrapperControls.querySelector('.edit-icon-div').addEventListener('click', () => {
+
+                            wrapperControls.querySelector('.edit-input').classList.toggle('hidden');
+                            imageAltTextDiv.classList.toggle('hidden');
+                        })
+
+                        const input = wrapperControls.querySelector('.edit-input input')
+
+                        const debounceCb = debounce(() => {
+                            changeImageAltTextInStorage(img.src, input.value);
+                            imageAltTextDiv.innerText = input.value;
+                        }, 500);
+
+                        input.addEventListener('input', debounceCb)
+                    }, 0)
+
                 })
-            },0)
+
+
         })
 
         setAltTextOfImageArrayToStorage(Array.from(images));
-    }else{
+    } else {
         window.location.reload();
     }
+}
+
+function changeImageAltTextInStorage(imgSrc, newAltText){
+    const pageUrl = trimQueryParamsFromUrl(window.location.href);
+
+    chrome.storage.local.get('alt_text', function (result) {
+        let altTextObject = result.alt_text;
+
+        if (!altTextObject) altTextObject = {};
+
+        let currentPageAltText = altTextObject[pageUrl];
+
+        if (!currentPageAltText) {
+            currentPageAltText = {};
+        }
+
+        currentPageAltText[imgSrc] = newAltText;
+
+        altTextObject[pageUrl] = currentPageAltText;
+        chrome.storage.local.set({'alt_text' : altTextObject})
+    })
 }
 
 function countOccurrencesOfImgSrc(array, ){ return arr.reduce((a, v) => (v === val ? a + 1 : a), 0)}
