@@ -6,24 +6,67 @@ const editIconSvg = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewB
 </g>
 </svg>`
 
+const inclusioPinkColor = '#ca3f64';
+
 const css = `
 *{
     box-sizing: border-box;
 }
 
+body{
+    height: auto !important;
+}
+
 .extension-header {
     overflow: hidden;
     background-color: white;
-    position: fixed;
-    /* Set the navbar to fixed position */
-    top: 0;
-    /* Position the navbar at the top of the page */
-    width: 100%;
-    /* Full width */
-    height: 100px;
+    position: sticky;
+    height: 10vh;
     box-shadow: 0px 5px 11px -1px rgba(0,0,0,0.75);
+    top:0;
     z-index: 10;
+
+    padding: 10px;
+
+    display: flex;
+    align-items: flex-end;
 }
+
+.extension-header .logo{
+    color: ${inclusioPinkColor};
+    font-size: 1.75em;
+    font-weight: bold;
+    padding-left: 20px;
+}
+
+.extension-header .selected-image{
+    flex: 1;
+    text-align: center;
+}
+
+.extension-header .discardBtn{
+    color: ${inclusioPinkColor};
+    border: 3px solid ${inclusioPinkColor};
+    padding: 3px 10px;
+    border-radius: 9999px;
+
+}
+
+.extension-header .saveBtn{
+    background-color: ${inclusioPinkColor};
+    border: 3px solid ${inclusioPinkColor};
+    padding: 3px 10px;
+    color: white;
+    border-radius: 9999px;
+}
+
+.vr{
+    height: 2em;
+    border: 1px solid gray;
+    background-color: gray;
+    margin: 0 10px;
+}
+
 
 .img-wrapper-div{
     border: 5px solid black;
@@ -49,14 +92,14 @@ const css = `
     cursor: pointer;
 }
 
-.neutral{
-    border-color: orange;
-    background-color: orange;
+.has-alt-text{
+    border-color: #2DC257;
+    background-color: #2DC257;
 }
 
 .no-alt-text{
-    border-color: red;
-    background-color: red;
+    border-color: ${inclusioPinkColor};
+    background-color: ${inclusioPinkColor};
 }
 
 .wrapper-controls{
@@ -254,11 +297,17 @@ function extensionStatusChange(extStatus){
         
         const body = document.querySelector('body')
         const header = document.createElement('div')
-        header.innerHTML = '<div>Pozdrav brate</div>'
+        header.innerHTML = `
+        <div class="logo">inclusio</div>
+        <div class="selected-image" >No image Selected</div>
+        <div class="discardBtn">Discard Changes</div>
+        <div class="vr"></div>
+        <div class="saveBtn">Save Changes</div>
+        `
         header.classList = "extension-header"
 
         loadCSS(css);
-        body.appendChild(header)
+        body.insertBefore(header, body.firstChild)
 
         const images = document.querySelectorAll('img');
 
@@ -278,18 +327,18 @@ function extensionStatusChange(extStatus){
                     const altText = storageAltText ?? img.alt ?? '';
                     if (!altText.trim()) {
                         wrapper.classList.add('no-alt-text')
-                        imageStatusMessage = 'Alt text missing'
+                        imageStatusMessage = 'No Description'
                     } else {
-                        wrapper.classList.add('neutral')
-                        imageStatusMessage = altText;
+                        wrapper.classList.add('has-alt-text')
+                        imageStatusMessage = 'Has Description';
                     }
                     parent.replaceChild(wrapper, img);
                     wrapper.appendChild(img);
 
                     wrapperControls.innerHTML = `
-            <div class="img-alt-text-div">${imageStatusMessage}</div>
-            <div class="edit-input hidden"><input size="${altText.length}" type="text" value="${altText}"></div>
-            <div class="edit-icon-div"> ${editIconSvg}</div>`
+            <div class="img-alt-text-div">${imageStatusMessage}</div>`
+            // <div class="edit-input hidden"><input size="${altText.length}" type="text" value="${altText}"></div>
+            // <div class="edit-icon-div"> ${editIconSvg}</div>`
                     wrapper.appendChild(wrapperControls)
 
                     //FOR OPENING GALLERY
@@ -303,22 +352,23 @@ function extensionStatusChange(extStatus){
                         const parentATag = wrapper.closest('a')
                         if (parentATag) parentATag.href = 'javascript:void(0)'
 
-                        const imageAltTextDiv = wrapperControls.querySelector('.img-alt-text-div')
+                        //EDIT with edit pen
+                        // const imageAltTextDiv = wrapperControls.querySelector('.img-alt-text-div')
 
-                        wrapperControls.querySelector('.edit-icon-div').addEventListener('click', () => {
+                        // wrapperControls.querySelector('.edit-icon-div').addEventListener('click', () => {
 
-                            wrapperControls.querySelector('.edit-input').classList.toggle('hidden');
-                            imageAltTextDiv.classList.toggle('hidden');
-                        })
+                        //     wrapperControls.querySelector('.edit-input').classList.toggle('hidden');
+                        //     imageAltTextDiv.classList.toggle('hidden');
+                        // })
 
-                        const input = wrapperControls.querySelector('.edit-input input')
+                        // const input = wrapperControls.querySelector('.edit-input input')
 
-                        const debounceCb = debounce(() => {
-                            changeImageAltTextInStorage(img.src, input.value);
-                            imageAltTextDiv.innerText = input.value;
-                        }, 500);
+                        // const debounceCb = debounce(() => {
+                        //     changeImageAltTextInStorage(img.src, input.value);
+                        //     imageAltTextDiv.innerText = input.value;
+                        // }, 500);
 
-                        input.addEventListener('input', debounceCb)
+                        // input.addEventListener('input', debounceCb)
                     }, 0)
 
                 })
