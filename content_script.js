@@ -1,3 +1,11 @@
+const editIconSvg = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" xmlns:xlink="http://www.w3.org/1999/xlink" enable-background="new 0 0 512 512">
+<g>
+  <g>
+    <path d="m179.2,410.4l-77.3-77.4 272.5-272.9 77.3,77.4-272.5,272.9zm-96-38.3l56.9,57-79.2,22.3 22.3-79.3zm411.8-249l-106.2-106.4c-7.7-7.7-21.2-7.7-28.9-3.55271e-15l-301.3,301.8c-2.5,2.5-4.3,5.5-5.2,8.9l-41.6,148c-2,7.1 0,14.8 5.2,20 3.9,3.9 11.7,6.7 20,5.2l147.8-41.7c3.4-0.9 6.4-2.7 8.9-5.2l301.3-301.7c8-8 8-20.9 0-28.9z"/>
+  </g>
+</g>
+</svg>`
+
 const css = `
 *{
     box-sizing: border-box;
@@ -19,6 +27,26 @@ const css = `
 
 .img-wrapper-div{
     border: 5px solid black;
+}
+
+.img-wrapper-div .wrapper-controls{
+    display: flex;
+    align-items: flex-end;
+}
+
+.img-wrapper-div .wrapper-controls .hidden{
+    display: none;
+}
+
+.img-wrapper-div .edit-icon-div svg{
+    margin-left: 10px;
+    width: 1.2em;
+    height: 1.2em;
+    fill: white;
+}
+
+.img-wrapper-div .edit-icon-div{
+    cursor: pointer;
 }
 
 .neutral{
@@ -145,17 +173,9 @@ chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         switch(request.message){
             case 'extension_status':
-                extensionStatusChange(request.extStatus)
+                extensionStatusChange(request.status)
             break;
         }
-
-        const body = document.querySelector('body')
-        const header = document.createElement('div')
-        header.innerHTML = '<div>Pozdrav brate</div>'
-        header.classList = "extension-header"
-
-        loadCSS(css);
-        body.appendChild(header)
     }
 )
 
@@ -169,12 +189,20 @@ function loadCSS(css) {
 
 function extensionStatusChange(extStatus){
     if(extStatus){
+
+        const body = document.querySelector('body')
+        const header = document.createElement('div')
+        header.innerHTML = '<div>Pozdrav brate</div>'
+        header.classList = "extension-header"
+
+        loadCSS(css);
+        body.appendChild(header)
+
         const images = document.querySelectorAll('img');
         images.forEach(img=>{
             const parent = img.parentNode
             const wrapper = document.createElement('div')
             wrapper.classList.add('img-wrapper-div')
-
 
             const wrapperControls = document.createElement('div');
             wrapperControls.classList.add('wrapper-controls')
@@ -190,20 +218,32 @@ function extensionStatusChange(extStatus){
             parent.replaceChild(wrapper, img);
             wrapper.appendChild(img);
 
-            wrapperControls.innerHTML = `<div>${imageStatusMessage}</div>`
+            wrapperControls.innerHTML = `
+            <div class="img-alt-text-div">${imageStatusMessage}</div>
+            <div class="edit-input hidden"><input size="${img.alt.length}" type="text" value="${img.alt}"></div>
+            <div class="edit-icon-div"> ${editIconSvg}</div>`
             wrapper.appendChild(wrapperControls)
 
+            //FOR OPENING GALLERY
             wrapper.addEventListener('click', (event) => {
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                toggleGalery(true)
+                // toggleGalery(true)
             })
 
             setTimeout(()=>{
                 const parentATag = wrapper.closest('a')
                 if(parentATag) parentATag.href = 'javascript:void(0)'
+
+                wrapperControls.querySelector('.edit-icon-div').addEventListener('click', ()=>{
+                    
+                    wrapperControls.querySelector('.edit-input').classList.toggle('hidden');
+                    wrapperControls.querySelector('.img-alt-text-div').classList.toggle('hidden')
+                })
             },0)
         })
+    }else{
+        window.location.reload();
     }
 }
 
