@@ -187,6 +187,34 @@ function loadCSS(css) {
     head.appendChild(style);
 }
 
+function trimQueryParamsFromUrl(url){
+    return url.split('?')[0]
+}
+
+function setAltTextOfImageArrayToStorage(imgArray) {
+    const pageUrl = trimQueryParamsFromUrl(window.location.href);
+
+    chrome.storage.sync.get('alt_text', function (result) {
+        let altTextObject = result.alt_text;
+
+        if (!altTextObject) altTextObject = {};
+
+        let currentPageAltText = altTextObject[pageUrl];
+
+        if (!currentPageAltText) {
+            currentPageAltText = {};
+        }
+
+        imgArray.forEach(img => {
+            currentPageAltText[img.src] = img.alt ?? ''
+        })
+
+        altTextObject[pageUrl] = currentPageAltText;
+        console.log(altTextObject)
+        chrome.storage.local.set({'alt_text' : altTextObject})
+    })
+}
+
 function extensionStatusChange(extStatus){
     if(extStatus){
 
@@ -199,6 +227,8 @@ function extensionStatusChange(extStatus){
         body.appendChild(header)
 
         const images = document.querySelectorAll('img');
+
+        chrome.storage.sync.set({})
         images.forEach(img=>{
             const parent = img.parentNode
             const wrapper = document.createElement('div')
@@ -242,6 +272,8 @@ function extensionStatusChange(extStatus){
                 })
             },0)
         })
+
+        setAltTextOfImageArrayToStorage(Array.from(images));
     }else{
         window.location.reload();
     }

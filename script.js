@@ -4,18 +4,21 @@ function getCurrentTab() {
             active: true,               // Select active tabs
             lastFocusedWindow: true     // In the current window
         }, function (tabs) {
-            resolve(tabs[0]);
+            resolve(tabs[0]); //split is for trimming query params
         });
     });
 }
 
+function trimQueryParamsFromUrl(url){
+    return url.split('?')[0]
+}
 
 const extStatusSwitch = document.getElementById('ext-status-switch')
 if(extStatusSwitch){
     extStatusSwitch.addEventListener('change', function(event){
 
         getCurrentTab().then(function (tab) {
-            const currentPageUrl = tab.url;
+            const currentPageUrl = trimQueryParamsFromUrl(tab.url)
 
             chrome.storage.sync.get('ext-status', function (result) {
                 let extStatus = result['ext-status'];
@@ -68,7 +71,7 @@ function showExtStatus(status){
 
 
 getCurrentTab().then(function (tab) {
-    const currentPageUrl = tab.url;
+    const currentPageUrl = trimQueryParamsFromUrl(tab.url);
     getAndSendExtStatus(currentPageUrl)
 })
 
