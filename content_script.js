@@ -407,7 +407,7 @@ function extensionStatusChange(extStatus){
 
         })
 
-        setAltTextOfImageArrayToStorage(Array.from(images));
+        // setAltTextOfImageArrayToStorage(Array.from(images));
     } else {
         const extHeader = document.querySelector('.extension-header');
 
@@ -501,12 +501,8 @@ function injectImagesIntoGallery(galleryImagesArray, selectedImage){
     const indexOfSelectedImg = galleryImagesArray.findIndex(img => selectedImage.src == img.src);
 
     const selectedImageHeaderDiv = document.querySelector('.extension-header .selected-image');
-    selectedImageHeaderDiv.innerHTML = `Image ${indexOfSelectedImg+1}`
-    if(selectedImage.alt){
-        selectedImageHeaderDiv.classList.add("has-alt-text")
-    }else{
-        selectedImageHeaderDiv.classList.add("no-alt-text")
-    }
+
+    extensionHeaderImageTitleUpdateByImage(selectedImage, indexOfSelectedImg+1)
 
     textArea.value = selectedImage.alt;
 
@@ -621,6 +617,44 @@ function injectGalleryJavascript() {
             selectedImageHeaderDiv.classList.remove('has-alt-text')
         }
     });
+
+
+    const textarea = document.querySelector('.galleryDiv textarea');
+    const debounceCb = debounce(() => {
+        // changeImageAltTextInStorage(img.src, input.value);
+        // imageAltTextDiv.innerText = input.value;
+
+        selectedImgRef.alt = textarea.value;
+        updateImageBorder(selectedImgRef);
+    }, 500);
+
+    textarea.addEventListener('input', debounceCb)
+}
+
+function extensionHeaderImageTitleUpdateByImage(selectedImageRef, index){
+    const selectedImageHeaderDiv = document.querySelector('.extension-header .selected-image');
+    if(index){
+        selectedImageHeaderDiv.innerHTML = `Image ${index}`
+    }
+    if(selectedImageRef.alt){
+        selectedImageHeaderDiv.classList.add("has-alt-text")
+        selectedImageHeaderDiv.classList.remove("no-alt-text")
+    }else{
+        selectedImageHeaderDiv.classList.add("no-alt-text")
+        selectedImageHeaderDiv.classList.remove("has-alt-text")
+    }
+}
+
+function updateImageBorder(selectedImageReference){
+    const selectedImageWrapperDiv = selectedImageReference.closest('.img-wrapper-div')
+    if(selectedImageReference.alt){
+        selectedImageWrapperDiv.classList.add("has-alt-text")
+        selectedImageWrapperDiv.classList.remove("no-alt-text");
+    }else{
+        selectedImageWrapperDiv.classList.add("no-alt-text")
+        selectedImageWrapperDiv.classList.remove("has-alt-text")
+    }
+    extensionHeaderImageTitleUpdateByImage(selectedImageReference)
 }
 
 
