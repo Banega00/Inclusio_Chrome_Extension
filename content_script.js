@@ -338,8 +338,8 @@ function extensionStatusChange(extStatus){
         loadCSS(css);
         body.insertBefore(header, body.firstChild)
 
-        const images = document.querySelectorAll('img:not(.gallery-img)');
-
+        let images = document.querySelectorAll('img:not(.gallery-img)');
+        images = filterDuplicateImagesBySrc(images);
         chrome.storage.sync.set({})
         images.forEach(img => {
             const parent = img.parentNode
@@ -439,7 +439,9 @@ function changeImageAltTextInStorage(imgSrc, newAltText){
 }
 
 function filterDuplicateImagesBySrc(galleryImagesArray) {
-
+    if(typeof galleryImagesArray == 'object'){
+        galleryImagesArray = Array.from(galleryImagesArray)
+    }
     const srcs = galleryImagesArray.map(o=> o.src)
     const filtered = galleryImagesArray.filter(({ src }, index) => !srcs.includes(src, index + 1))
     return filtered;
@@ -492,6 +494,7 @@ function toggleGallery(show, selectedImage){
 }
 
 function injectImagesIntoGallery(galleryImagesArray, selectedImage){
+    galleryImagesArray = filterDuplicateImagesBySrc(galleryImagesArray)
     selectedImgRef = selectedImage;
     const mainImg = document.querySelector('.galleryDiv .img-div.main img');
     const textArea = document.querySelector('.galleryDiv textarea')
@@ -531,11 +534,18 @@ function injectGalleryJavascript() {
     const prevBtn = document.querySelector('.galleryDiv .prev-img-svg-div');
 
     prevBtn.addEventListener('click', () =>{
-        const allImages = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
-        
-        const selectedImageIndex = allImages.findIndex(img => selectedImgRef.src == img.src)
+        let allImages = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
+        allImages = filterDuplicateImagesBySrc(allImages);
+        let selectedImageIndex = allImages.findIndex(img => selectedImgRef.src == img.src)
 
-        if(selectedImageIndex == 0) return;
+        if(selectedImageIndex == 0) selectedImageIndex = 1
+
+        if(selectedImageIndex <= 1){
+            const prevImg = document.querySelector('.img-div.prev img');
+            prevImg.src = ''
+            prevImg.alt = '_'
+        }
+
 
         //selected img is prev img
         selectedImgRef = allImages[selectedImageIndex - 1];
@@ -548,21 +558,40 @@ function injectGalleryJavascript() {
 
         //prev img is prev-prev img
         const prevImg = document.querySelector('.img-div.prev img');
-        prevImg.src = allImages[selectedImageIndex-2].src;
+        prevImg.src = allImages[selectedImageIndex - 2]?.src;
 
         //next img is selected img
         const nextImg = document.querySelector('.img-div.next img');
-        nextImg.src = allImages[selectedImageIndex].src;
+        nextImg.src = allImages[selectedImageIndex]?.src;
+
+
+        //SETUP HEADER
+        const selectedImageHeaderDiv = document.querySelector('.extension-header .selected-image')
+        selectedImageHeaderDiv.innerHTML = `Image ${selectedImageIndex-1+1}`
+        if(selectedImgRef.alt){
+            selectedImageHeaderDiv.classList.add('has-alt-text')
+            selectedImageHeaderDiv.classList.remove('no-alt-text')
+        }else{
+            selectedImageHeaderDiv.classList.add('no-alt-text')
+            selectedImageHeaderDiv.classList.remove('yes-alt-text')
+        }
     });
 
     const nextBtn = document.querySelector('.galleryDiv .next-img-svg-div');
 
     nextBtn.addEventListener('click', () =>{
-        const allImages = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
+        let allImages = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
+        allImages = filterDuplicateImagesBySrc(allImages);
         
-        const selectedImageIndex = allImages.findIndex(img => selectedImgRef.src == img.src)
+        let selectedImageIndex = allImages.findIndex(img => selectedImgRef.src == img.src)
 
-        if(selectedImageIndex == 0) return;
+        if(selectedImageIndex == allImages.length - 1) selectedImageIndex = allImages.length-1
+
+        if(selectedImageIndex >= allImages.length-1){
+            const nextImg = document.querySelector('.img-div.next img');
+            nextImg.src = ''
+            nextImg.alt = '_'
+        }
 
         //selected img is prev img
         selectedImgRef = allImages[selectedImageIndex + 1];
@@ -579,7 +608,18 @@ function injectGalleryJavascript() {
 
         //next img is selected img
         const nextImg = document.querySelector('.img-div.next img');
-        nextImg.src = allImages[selectedImageIndex+2].src;
+        nextImg.src = allImages[selectedImageIndex+2]?.src;
+
+        //SETUP HEADER
+        const selectedImageHeaderDiv = document.querySelector('.extension-header .selected-image')
+        selectedImageHeaderDiv.innerHTML = `Image ${selectedImageIndex+1+1}`
+        if(selectedImgRef.alt){
+            selectedImageHeaderDiv.classList.add('has-alt-text')
+            selectedImageHeaderDiv.classList.remove('no-alt-text')
+        }else{
+            selectedImageHeaderDiv.classList.add('no-alt-text')
+            selectedImageHeaderDiv.classList.remove('has-alt-text')
+        }
     });
 }
 
