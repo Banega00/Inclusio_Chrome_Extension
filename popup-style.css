@@ -32,3 +32,11 @@ body{
     font-size: 1.6em;
     color:#A79197;
 }
+
+.options-btn{
+    width: 1.5em;
+    height: 1.5em;
+    margin-left: auto;
+    transform: translateY(-5px);
+    cursor: pointer;
+}

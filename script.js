@@ -1,3 +1,8 @@
+//OPTIONS BTN
+document.querySelector('.options-btn').addEventListener('click',()=>{
+    chrome.runtime.openOptionsPage();
+})
+
 function getCurrentTab() {
     return new Promise(function (resolve, reject) {
         chrome.tabs.query({
