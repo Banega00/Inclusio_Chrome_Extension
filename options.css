@@ -9,3 +9,12 @@
     margin-top: 20px;
     border: 1px solid black;
 }
+
+
+.signup-div.hidden{
+    display: none;
+}
+
+.profile-info-div.hidden{
+    display: none;
+}
