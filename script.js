@@ -24,7 +24,6 @@ if(extStatusSwitch){
                 let extStatus = result['ext-status'];
     
                 if(extStatus == undefined){ //extension status is totally empty
-                    const currentPageUrl = currentPageUrl;
                     extStatus = {
                         [currentPageUrl]: true
                     }

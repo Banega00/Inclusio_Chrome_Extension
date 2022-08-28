@@ -8,6 +8,11 @@
     "activeTab",
     "unlimitedStorage"
   ],
+  "options_ui": {
+    "page": "options.html",
+    "browser_style": true,
+    "open_in_tab": true
+  },
   "content_scripts": [
     {
       "matches": [

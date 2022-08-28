@@ -33,6 +33,10 @@ c0.4,0.4,0.4,1,0,1.4C13.5,15.9,13.3,16,13,16z" />
 const inclusioPinkColor = '#ca3f64';
 
 const galleryCSS= `
+.galleryDiv.hidden{
+    display: none;
+}
+
 .galleryDiv .close-btn {
     position: fixed;
     top: 5%;
@@ -128,6 +132,14 @@ body{
     align-items: flex-end;
 }
 
+.extension-header .selected-image.has-alt-text{
+    color: #2DC257;
+}
+
+.extension-header .selected-image.no-alt-text{
+    color: ${inclusioPinkColor};
+}
+
 .extension-header .logo{
     color: ${inclusioPinkColor};
     font-size: 1.75em;
@@ -138,6 +150,7 @@ body{
 .extension-header .selected-image{
     flex: 1;
     text-align: center;
+    font-size: 1.2em;
 }
 
 .extension-header .discardBtn{
@@ -188,12 +201,12 @@ body{
     cursor: pointer;
 }
 
-.has-alt-text{
+.img-wrapper-div.has-alt-text{
     border-color: #2DC257;
     background-color: #2DC257;
 }
 
-.no-alt-text{
+.img-wrapper-div.no-alt-text{
     border-color: ${inclusioPinkColor};
     background-color: ${inclusioPinkColor};
 }
@@ -219,6 +232,7 @@ body{
 
 ${galleryCSS}
 `
+let galleryImagesArray = [];
 
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
@@ -307,7 +321,7 @@ function extensionStatusChange(extStatus){
         const header = document.createElement('div')
         header.innerHTML = `
         <div class="logo">inclusio</div>
-        <div class="selected-image" >No image Selected</div>
+        <div class="selected-image" >No Image Selected</div>
         <div class="discardBtn">Discard Changes</div>
         <div class="vr"></div>
         <div class="saveBtn">Save Changes</div>
@@ -353,7 +367,9 @@ function extensionStatusChange(extStatus){
                     wrapper.addEventListener('click', (event) => {
                         event.stopPropagation();
                         event.stopImmediatePropagation();
-                        toggleGallery(true)
+                        
+                        
+                        toggleGallery(true, img)
                     })
 
                     setTimeout(() => {
@@ -411,9 +427,14 @@ function changeImageAltTextInStorage(imgSrc, newAltText){
     })
 }
 
-function countOccurrencesOfImgSrc(array, ){ return arr.reduce((a, v) => (v === val ? a + 1 : a), 0)}
+function filterDuplicateImagesBySrc(galleryImagesArray) {
 
-function toggleGallery(show){
+    const srcs = galleryImagesArray.map(o=> o.src)
+    const filtered = galleryImagesArray.filter(({ src }, index) => !srcs.includes(src, index + 1))
+    return filtered;
+}
+
+function toggleGallery(show, selectedImage){
     let galleryDiv = document.querySelector('.galleryDiv');
 
     if(!galleryDiv){
@@ -425,7 +446,14 @@ function toggleGallery(show){
 
         injectGalleryContent(galleryDiv);
         
-        // setTimeout(injectGalleryJavascript,0)
+        setTimeout(injectGalleryJavascript,0)
+
+        galleryImagesArray = Array.from(document.querySelectorAll('img'));
+
+        //remove images with same src (only one of them)
+        galleryImagesArray = filterDuplicateImagesBySrc(galleryImagesArray);
+
+        setTimeout(() => injectImagesIntoGallery(galleryImagesArray, selectedImage),0)
 
         // const allImages = document.querySelectorAll('img')
         // const allImagesSourcesAndAlts = Array.from(allImages).map(img => {
@@ -438,75 +466,54 @@ function toggleGallery(show){
         // setTimeout(injectImagesIntoGallery(allImagesSourcesAndAlts),1);
     }else{
         //gallery div already injected
-        if(show){
+        if (show) {
             galleryDiv.classList.remove('hidden')
-        }else{
+            galleryImagesArray = Array.from(document.querySelectorAll('img'));
+
+            //remove images with same src (only one of them)
+            galleryImagesArray = filterDuplicateImagesBySrc(galleryImagesArray);
+
+            setTimeout(() => injectImagesIntoGallery(galleryImagesArray, selectedImage), 0)
+        } else {
             galleryDiv.classList.add('hidden')
         }
     }
 }
 
-function injectImagesIntoGallery(imageSourceAndAltArray){
-    const imagesContainer = document.querySelector('.other-images-cotainer');
-    imageSourceAndAltArray.forEach(({src, alt}, index) => {
-        const imageContainer = document.createElement('div')
-        imageContainer.classList.add('image-container');
+function injectImagesIntoGallery(galleryImagesArray, selectedImage){
+    const mainImg = document.querySelector('.galleryDiv .img-div.main img');
+    const textArea = document.querySelector('.galleryDiv textarea')
+    const indexOfSelectedImg = galleryImagesArray.findIndex(img => selectedImage.src == img.src);
 
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = alt;
+    const selectedImageHeaderDiv = document.querySelector('.extension-header .selected-image');
+    selectedImageHeaderDiv.innerHTML = `Image ${indexOfSelectedImg + 1}`;
+    if(selectedImage.alt){
+        selectedImageHeaderDiv.classList.add("has-alt-text")
+    }else{
+        selectedImageHeaderDiv.classList.add("no-alt-text")
+    }
 
-        imageContainer.appendChild(img);
+    textArea.value = selectedImage.alt;
 
-        imagesContainer.appendChild(imageContainer);
-
-        imageContainer.addEventListener('click', event => {
-            document.querySelector('.image-container[selected="true"]').removeAttribute('selected')
-            selectImage(event.currentTarget, index + 1);
-        })
-    })
+    mainImg.src = selectedImage.src;
 }
 
 function injectGalleryJavascript() {
-    const selectedImage = document.getElementById('selectedImage');
-    const imageNumberSpan = document.getElementById('image-number')
-    const totalNumberSpan = document.getElementById('total-number')
-    const saveAltTextBtn = document.getElementById('saveAltText-btn')
-    const closeGalleryBtn = document.getElementById('closeGallery-btn')
-    const otherImagesContainer = document.querySelector('.other-images-cotainer')
-    const nextImgBtn = document.getElementById('nextImg-btn')
-    const previousImgBtn = document.getElementById('previousImg-btn')
-    const imageTextArea = document.getElementById('image-alt-textarea')
 
-    // const allImages = document.querySelectorAll('.image-container')
-    // allImages.forEach((imageContainer, index) => {
-    //     imageContainer.addEventListener('click', event => {
-    //         document.querySelector('.image-container[selected="true"]').removeAttribute('selected')
-    //         selectImage(event.currentTarget, index + 1);
-    //     })
-    // })
-
-    closeGalleryBtn.addEventListener('click', () => toggleGallery(false))
-
-    selectedImage.src = document.querySelector('.image-container[selected="true"] img').src
-    totalNumberSpan.innerHTML = allImages.length;
-
-    
-
-
-    saveAltTextBtn.addEventListener('click', target => {
-        console.log("Saving alt text for image", imageTextArea.value)
+    const closeBtn = document.querySelector('.galleryDiv .close-btn');
+    closeBtn.addEventListener('click', () => {
+        toggleGallery(false)
     })
 }
 
-function selectImage(imageContainer, index) {
-    const selectedImage = imageContainer.querySelector('img');
-    const selectedImageSource = selectedImage.src;
-    imageContainer.setAttribute('selected', 'true')
-    selectedImage.src = selectedImageSource;
-    imageTextArea.value = selectedImage.alt
-    imageNumberSpan.innerHTML = index;
-}
+// function selectImage(imageContainer, index) {
+//     const selectedImage = imageContainer.querySelector('img');
+//     const selectedImageSource = selectedImage.src;
+//     imageContainer.setAttribute('selected', 'true')
+//     selectedImage.src = selectedImageSource;
+//     imageTextArea.value = selectedImage.alt
+//     imageNumberSpan.innerHTML = index;
+// }
 
 function injectGalleryContent(galleryDiv){
     galleryDiv.innerHTML = `<div class="carousel">
