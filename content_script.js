@@ -186,6 +186,10 @@ body{
     align-items: flex-end;
 }
 
+.img-wrapper-div .wrapper-controls .img-alt-text-div{
+    font-size: 1rem;
+}
+
 .img-wrapper-div .wrapper-controls .hidden{
     display: none;
 }
@@ -232,6 +236,9 @@ body{
 
 ${galleryCSS}
 `
+
+let selectedImgRef = undefined;
+
 let galleryImagesArray = [];
 
 chrome.runtime.onMessage.addListener(
@@ -331,7 +338,7 @@ function extensionStatusChange(extStatus){
         loadCSS(css);
         body.insertBefore(header, body.firstChild)
 
-        const images = document.querySelectorAll('img');
+        const images = document.querySelectorAll('img:not(.gallery-img)');
 
         chrome.storage.sync.set({})
         images.forEach(img => {
@@ -402,7 +409,11 @@ function extensionStatusChange(extStatus){
 
         setAltTextOfImageArrayToStorage(Array.from(images));
     } else {
-        window.location.reload();
+        const extHeader = document.querySelector('.extension-header');
+
+        if(extHeader){
+            window.location.reload();
+        }
     }
 }
 
@@ -448,14 +459,14 @@ function toggleGallery(show, selectedImage){
         
         setTimeout(injectGalleryJavascript,0)
 
-        galleryImagesArray = Array.from(document.querySelectorAll('img'));
+        galleryImagesArray = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
 
         //remove images with same src (only one of them)
         galleryImagesArray = filterDuplicateImagesBySrc(galleryImagesArray);
 
         setTimeout(() => injectImagesIntoGallery(galleryImagesArray, selectedImage),0)
 
-        // const allImages = document.querySelectorAll('img')
+        // const allImages = document.querySelectorAll('img:not(.gallery-img)')
         // const allImagesSourcesAndAlts = Array.from(allImages).map(img => {
         //     return {src: img.src, alt: img.alt}
         // });
@@ -468,7 +479,7 @@ function toggleGallery(show, selectedImage){
         //gallery div already injected
         if (show) {
             galleryDiv.classList.remove('hidden')
-            galleryImagesArray = Array.from(document.querySelectorAll('img'));
+            galleryImagesArray = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
 
             //remove images with same src (only one of them)
             galleryImagesArray = filterDuplicateImagesBySrc(galleryImagesArray);
@@ -481,12 +492,13 @@ function toggleGallery(show, selectedImage){
 }
 
 function injectImagesIntoGallery(galleryImagesArray, selectedImage){
+    selectedImgRef = selectedImage;
     const mainImg = document.querySelector('.galleryDiv .img-div.main img');
     const textArea = document.querySelector('.galleryDiv textarea')
     const indexOfSelectedImg = galleryImagesArray.findIndex(img => selectedImage.src == img.src);
 
     const selectedImageHeaderDiv = document.querySelector('.extension-header .selected-image');
-    selectedImageHeaderDiv.innerHTML = `Image ${indexOfSelectedImg + 1}`;
+    selectedImageHeaderDiv.innerHTML = `Image ${indexOfSelectedImg+1}`
     if(selectedImage.alt){
         selectedImageHeaderDiv.classList.add("has-alt-text")
     }else{
@@ -496,15 +508,81 @@ function injectImagesIntoGallery(galleryImagesArray, selectedImage){
     textArea.value = selectedImage.alt;
 
     mainImg.src = selectedImage.src;
+
+    //setup prev i next images
+    const prevImg = document.querySelector('.galleryDiv .img-div.prev img');
+    prevImg.src = galleryImagesArray[indexOfSelectedImg-1].src
+
+    const nextImg = document.querySelector('.galleryDiv .img-div.next img');
+    nextImg.src = galleryImagesArray[indexOfSelectedImg+1].src
 }
 
 function injectGalleryJavascript() {
 
     const closeBtn = document.querySelector('.galleryDiv .close-btn');
     closeBtn.addEventListener('click', () => {
-        toggleGallery(false)
+        toggleGallery(false);
+        const selectedImageHeaderDiv = document.querySelector('.extension-header .selected-image');
+        selectedImageHeaderDiv.innerHTML = 'No Image Selected';
+        selectedImageHeaderDiv.classList.remove('no-alt-text')
+        selectedImageHeaderDiv.classList.remove('has-alt-text')
     })
+
+    const prevBtn = document.querySelector('.galleryDiv .prev-img-svg-div');
+
+    prevBtn.addEventListener('click', () =>{
+        const allImages = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
+        
+        const selectedImageIndex = allImages.findIndex(img => selectedImgRef.src == img.src)
+
+        if(selectedImageIndex == 0) return;
+
+        //selected img is prev img
+        selectedImgRef = allImages[selectedImageIndex - 1];
+        const mainImg = document.querySelector('.img-div.main img');
+        mainImg.src = selectedImgRef.src;
+
+        //setup textarea
+        const textarea = document.querySelector('.galleryDiv textarea');
+        textarea.value = selectedImgRef.alt;
+
+        //prev img is prev-prev img
+        const prevImg = document.querySelector('.img-div.prev img');
+        prevImg.src = allImages[selectedImageIndex-2].src;
+
+        //next img is selected img
+        const nextImg = document.querySelector('.img-div.next img');
+        nextImg.src = allImages[selectedImageIndex].src;
+    });
+
+    const nextBtn = document.querySelector('.galleryDiv .next-img-svg-div');
+
+    nextBtn.addEventListener('click', () =>{
+        const allImages = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
+        
+        const selectedImageIndex = allImages.findIndex(img => selectedImgRef.src == img.src)
+
+        if(selectedImageIndex == 0) return;
+
+        //selected img is prev img
+        selectedImgRef = allImages[selectedImageIndex + 1];
+        const mainImg = document.querySelector('.img-div.main img');
+        mainImg.src = selectedImgRef.src;
+
+        //setup textarea
+        const textarea = document.querySelector('.galleryDiv textarea');
+        textarea.value = selectedImgRef.alt;
+
+        //prev img is prev-prev img
+        const prevImg = document.querySelector('.img-div.prev img');
+        prevImg.src = allImages[selectedImageIndex].src;
+
+        //next img is selected img
+        const nextImg = document.querySelector('.img-div.next img');
+        nextImg.src = allImages[selectedImageIndex+2].src;
+    });
 }
+
 
 // function selectImage(imageContainer, index) {
 //     const selectedImage = imageContainer.querySelector('img');
@@ -517,17 +595,17 @@ function injectGalleryJavascript() {
 
 function injectGalleryContent(galleryDiv){
     galleryDiv.innerHTML = `<div class="carousel">
-    <div class="img-div prev"><img src="https://picsum.photos/500/500" alt=""></div>
+    <div class="img-div prev"><img class="gallery-img" src="https://picsum.photos/500/500" alt=""></div>
     <div class="prev-img-svg-div">
         ${prevImgSvg}
     </div>
 
-    <div class="img-div main"><img src="https://picsum.photos/500/500" alt=""></div>
+    <div class="img-div main"><img class="gallery-img" src="https://picsum.photos/500/500" alt=""></div>
 
     <div class="next-img-svg-div">
         ${prevImgSvg}
     </div>
-    <div class="img-div next"><img src="https://picsum.photos/500/500" alt=""></div>
+    <div class="img-div next"><img class="gallery-img" src="https://picsum.photos/500/500" alt=""></div>
 </div>
 <div class="text-area-div">
     <div>
