@@ -3,6 +3,9 @@ const profileInfoDiv = document.querySelector('.profile-info-div');
 const loginBtn = document.querySelector('#login-btn')
 const registerBtn = document.querySelector('#register-btn')
 const signOutBtn = document.querySelector('#sign-out-btn')
+const responseMsgDiv = document.querySelector('.response-msg-div')
+
+const backend_url = `http://localhost:3000`
 
 chrome.storage.sync.get('user', function(result){
     
@@ -27,9 +30,18 @@ signOutBtn.addEventListener('click', () =>{
 loginBtn.addEventListener('click', ()=>{
     const username = document.querySelector('.login-div #username').value;
     const password = document.querySelector('.login-div #password').value;
-
+    
     login(username, password)
 })
+
+registerBtn.addEventListener('click', ()=>{
+    const username = document.querySelector('.register-div #username').value;
+    const password = document.querySelector('.register-div #password').value;
+    const role = document.querySelector('.register-div #roles').value;
+
+    register(username, password, role)
+})
+
 
 function parseJwt (token) {
     var base64Url = token.split('.')[1];
@@ -43,15 +55,61 @@ function parseJwt (token) {
 
 function login(username, password){
     //send http request to backend
-    console.log('logging in',username, password)
-    const jwtToken = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkpvaG4iLCJyb2xlIjoiVm9sdW50ZWVyIiwiaWF0IjoxNTE2MjM5MDIyfQ.fzaqnQmnwr80OW8ibrX6zyLvwwoz86bnYlVStmL5AbE`
-    const decodedJwt = parseJwt(jwtToken)
 
-    chrome.storage.sync.set({user: {username: decodedJwt.username, jwtToken, role: decodedJwt.role}}, () =>{
-        window.location.reload();
+    fetch(`${backend_url}/login`, {method: 'POST', body: JSON.stringify({username, password}), headers:{'Content-Type': 'application/json'}, credentials: 'same-origin'})
+    .then(response => response.json())
+        .then(response => {
+            switch (response.status) {
+                case 200:
+                    const decodedJwt = parseJwt(response.payload.token)
+                    chrome.storage.sync.set({ user: { username: decodedJwt.username, role: decodedJwt.role, token: decodedJwt.token } }, () => {
+                        window.location.reload();
+                    })
+                break;
+            case 400:
+                if(response.code == 10003){
+                    //user does not exist
+                    responseMsgDiv.innerHTML = `User ${username} not found.`
+                }else if(response.code == 10004){
+                    //invalid password
+                    responseMsgDiv.innerHTML = `Invalid password.`
+                }else{
+                    //some other error
+                    responseMsgDiv.innerHTML = `Error occured`
+                }
+                break;
+        }
+    })
+    .catch(error=>{
+        responseMsgDiv.innerHTML = `Error occured`
+        console.log(error)
     })
 }
 
 function register(username, password, role){
-
+    fetch(`${backend_url}/register`, {method: 'POST', body: JSON.stringify({username, password, role}), headers:{'Content-Type': 'application/json'}, credentials: 'same-origin'})
+    .then(response => response.json())
+        .then(response => {
+            switch (response.status) {
+                case 201:
+                    const decodedJwt = parseJwt(response.payload.token)
+                    chrome.storage.sync.set({ user: { username: decodedJwt.username, role: decodedJwt.role, token: decodedJwt.token } }, () => {
+                        window.location.reload();
+                    })
+                break;
+            case 400:
+                if(response.code == 10002){
+                    //user does not exist
+                    responseMsgDiv.innerHTML = `User ${username} already exists.`
+                }else{
+                    //some other error
+                    responseMsgDiv.innerHTML = `Error occured`
+                }
+                break;
+        }
+    })
+    .catch(error=>{
+        responseMsgDiv.innerHTML = `Error occured`
+        console.log(error)
+    })
 }
