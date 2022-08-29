@@ -5,15 +5,6 @@ const pageCoveredText = `This page is already covered`;
 const pageNotCoveredtext = `Request for Volunteers to Interpred`;
 const requestSentText = `Request sent, waiting for volunteers`;
 
-chrome.storage.sync.get('user', function(result){
-    const user = result.user;
-
-    if(!user || !user.username || !user.role){
-        userInfoDiv.innerHTML = `You are not logged in`
-    }else{
-        userInfoDiv.innerHTML = `${user.role}: ${user.username}`
-    }
-})
 
 //OPTIONS BTN
 document.querySelector('.options-btn').addEventListener('click',()=>{
@@ -137,6 +128,18 @@ function sendExtensionStatusToContentScript(status){
     })
 }
 
+function setFirstLetter(word){
+    document.querySelector('.first-letter-div').innerHTML = word.charAt(0);
+}
+
+function displayRole(role){
+    document.querySelector('.user-info-div .role-and-username-div .role-div').innerHTML = role;
+}
+
+function displayUsername(username){
+    document.querySelector('.user-info-div .role-and-username-div .username-div').innerHTML = username;
+}
+
 fetchPageData();
 
 function fetchPageData(){
@@ -151,23 +154,45 @@ function fetchPageData(){
             {'img_src2':'alt_text2'}
         ]}
 
-        switch (response.page_status) {
-            case 'covered':
-                pageStatusDiv.innerHTML = pageCoveredText;
-                pageStatusDiv.classList.remove('request-sent', 'not-covered')
-                pageStatusDiv.classList.add('covered')
-                break;
-            case 'not_covered':
-                pageStatusDiv.innerHTML = pageNotCoveredtext;
-                pageStatusDiv.classList.remove('request-sent', 'covered')
-                pageStatusDiv.classList.add('not-covered')
-                break;
-            case 'request_sent':
-                pageStatusDiv.innerHTML = requestSentText;
-                pageStatusDiv.classList.remove('covered', 'not-covered')
-                pageStatusDiv.classList.add('request-sent')
-                break;
-        }
+        chrome.storage.sync.get('user', function(result){
+            const user = result.user;
+        
+            if(!user || !user.username || !user.role){
+                // userInfoDiv.innerHTML = `You are not logged in`
+            }else if(user.role == 'Volunteer'){
+                //Profile info
+                userInfoDiv.classList.remove('hidden');
+                setFirstLetter(user.username)
+
+                displayRole(user.role)
+                displayUsername(user.username)
+
+            }else if(user.role == 'Consumer'){
+
+                userInfoDiv.classList.add('hidden');//user info div shown only for volunteer
+
+                //Page status shown only for consumers
+                switch (response.page_status) {
+                    case 'covered':
+                        pageStatusDiv.innerHTML = pageCoveredText;
+                        pageStatusDiv.classList.remove('request-sent', 'not-covered')
+                        pageStatusDiv.classList.add('covered')
+                        break;
+                    case 'not_covered':
+                        pageStatusDiv.innerHTML = pageNotCoveredtext;
+                        pageStatusDiv.classList.remove('request-sent', 'covered')
+                        pageStatusDiv.classList.add('not-covered')
+                        break;
+                    case 'request_sent':
+                        pageStatusDiv.innerHTML = requestSentText;
+                        pageStatusDiv.classList.remove('covered', 'not-covered')
+                        pageStatusDiv.classList.add('request-sent')
+                        break;
+                }
+            }
+        })
+
+        
     })
 }
 
