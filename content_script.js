@@ -245,7 +245,7 @@ chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         switch(request.message){
             case 'extension_status':
-                extensionStatusChange(request.status)
+                extensionStatusChange(request.status, request.role)
             break;
         }
     }
@@ -320,101 +320,113 @@ function getImageAltTextFromStorage(imgSrc){
     });
 }
 
-function extensionStatusChange(extStatus){
-    if(extStatus){
-        if(document.querySelector('.extension-header') && extStatus == true) return;
-        
-        const body = document.querySelector('body')
-        const header = document.createElement('div')
-        header.innerHTML = `
-        <div class="logo">inclusio</div>
-        <div class="selected-image" >No Image Selected</div>
-        <div class="discardBtn">Discard Changes</div>
-        <div class="vr"></div>
-        <div class="saveBtn">Save Changes</div>
-        `
-        header.classList = "extension-header"
-
-        loadCSS(css);
-        body.insertBefore(header, body.firstChild)
-
-        let images = document.querySelectorAll('img:not(.gallery-img)');
-        images = filterDuplicateImagesBySrc(images);
-        chrome.storage.sync.set({})
-        images.forEach(img => {
-            const parent = img.parentNode
-            const wrapper = document.createElement('div')
-            wrapper.classList.add('img-wrapper-div')
-
-            const wrapperControls = document.createElement('div');
-            wrapperControls.classList.add('wrapper-controls')
-            let imageStatusMessage = ''
-
-            getImageAltTextFromStorage(img.src)
-                .then(storageAltText => {
-
-                    const altText = storageAltText ?? img.alt ?? '';
-                    if (!altText.trim()) {
-                        wrapper.classList.add('no-alt-text')
-                        imageStatusMessage = 'No Description'
-                    } else {
-                        wrapper.classList.add('has-alt-text')
-                        imageStatusMessage = 'Has Description';
-                    }
-                    parent.replaceChild(wrapper, img);
-                    wrapper.appendChild(img);
-
-                    wrapperControls.innerHTML = `
-            <div class="img-alt-text-div">${imageStatusMessage}</div>`
-            // <div class="edit-input hidden"><input size="${altText.length}" type="text" value="${altText}"></div>
-            // <div class="edit-icon-div"> ${editIconSvg}</div>`
-                    wrapper.appendChild(wrapperControls)
-
-                    //FOR OPENING GALLERY
-                    wrapper.addEventListener('click', (event) => {
-                        event.stopPropagation();
-                        event.stopImmediatePropagation();
-                        
-                        
-                        toggleGallery(true, img)
+function extensionStatusChange(extStatus, role){
+    console.log("ROLE JE", role)
+    if(role == 'Volunteer'){
+        if(extStatus){
+            if(document.querySelector('.extension-header') && extStatus == true) return;
+            
+            const body = document.querySelector('body')
+            const header = document.createElement('div')
+            header.innerHTML = `
+            <div class="logo">inclusio</div>
+            <div class="selected-image" >No Image Selected</div>
+            <div class="discardBtn">Discard Changes</div>
+            <div class="vr"></div>
+            <div class="saveBtn">Save Changes</div>
+            `
+            header.classList = "extension-header"
+    
+            loadCSS(css);
+            body.insertBefore(header, body.firstChild)
+    
+            let images = document.querySelectorAll('img:not(.gallery-img)');
+            images = filterDuplicateImagesBySrc(images);
+            chrome.storage.sync.set({})
+            images.forEach(img => {
+                const parent = img.parentNode
+                const wrapper = document.createElement('div')
+                wrapper.classList.add('img-wrapper-div')
+    
+                const wrapperControls = document.createElement('div');
+                wrapperControls.classList.add('wrapper-controls')
+                let imageStatusMessage = ''
+    
+                getImageAltTextFromStorage(img.src)
+                    .then(storageAltText => {
+    
+                        const altText = storageAltText ?? img.alt ?? '';
+                        if (!altText.trim()) {
+                            wrapper.classList.add('no-alt-text')
+                            imageStatusMessage = 'No Description'
+                        } else {
+                            wrapper.classList.add('has-alt-text')
+                            imageStatusMessage = 'Has Description';
+                        }
+                        parent.replaceChild(wrapper, img);
+                        wrapper.appendChild(img);
+    
+                        wrapperControls.innerHTML = `
+                <div class="img-alt-text-div">${imageStatusMessage}</div>`
+                // <div class="edit-input hidden"><input size="${altText.length}" type="text" value="${altText}"></div>
+                // <div class="edit-icon-div"> ${editIconSvg}</div>`
+                        wrapper.appendChild(wrapperControls)
+    
+                        //FOR OPENING GALLERY
+                        wrapper.addEventListener('click', (event) => {
+                            event.stopPropagation();
+                            event.stopImmediatePropagation();
+                            
+                            
+                            toggleGallery(true, img)
+                        })
+    
+                        setTimeout(() => {
+                            const parentATag = wrapper.closest('a')
+                            if (parentATag) parentATag.href = 'javascript:void(0)'
+    
+                            //EDIT with edit pen
+                            // const imageAltTextDiv = wrapperControls.querySelector('.img-alt-text-div')
+    
+                            // wrapperControls.querySelector('.edit-icon-div').addEventListener('click', () => {
+    
+                            //     wrapperControls.querySelector('.edit-input').classList.toggle('hidden');
+                            //     imageAltTextDiv.classList.toggle('hidden');
+                            // })
+    
+                            // const input = wrapperControls.querySelector('.edit-input input')
+    
+                            // const debounceCb = debounce(() => {
+                            //     changeImageAltTextInStorage(img.src, input.value);
+                            //     imageAltTextDiv.innerText = input.value;
+                            // }, 500);
+    
+                            // input.addEventListener('input', debounceCb)
+                        }, 0)
+    
                     })
-
-                    setTimeout(() => {
-                        const parentATag = wrapper.closest('a')
-                        if (parentATag) parentATag.href = 'javascript:void(0)'
-
-                        //EDIT with edit pen
-                        // const imageAltTextDiv = wrapperControls.querySelector('.img-alt-text-div')
-
-                        // wrapperControls.querySelector('.edit-icon-div').addEventListener('click', () => {
-
-                        //     wrapperControls.querySelector('.edit-input').classList.toggle('hidden');
-                        //     imageAltTextDiv.classList.toggle('hidden');
-                        // })
-
-                        // const input = wrapperControls.querySelector('.edit-input input')
-
-                        // const debounceCb = debounce(() => {
-                        //     changeImageAltTextInStorage(img.src, input.value);
-                        //     imageAltTextDiv.innerText = input.value;
-                        // }, 500);
-
-                        // input.addEventListener('input', debounceCb)
-                    }, 0)
-
-                })
-
+    
+    
+            })
+    
+            // setAltTextOfImageArrayToStorage(Array.from(images));
+        } else {
+            const extHeader = document.querySelector('.extension-header');
+    
+            if(extHeader){
+                window.location.reload();
+            }
+        }
+    }else if(role == 'Consumer'){
+        //change images alt text
+    
+        //1 - fetch 
+        const allImages = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
+        allImages.forEach(img =>{
 
         })
-
-        // setAltTextOfImageArrayToStorage(Array.from(images));
-    } else {
-        const extHeader = document.querySelector('.extension-header');
-
-        if(extHeader){
-            window.location.reload();
-        }
     }
+    
 }
 
 function changeImageAltTextInStorage(imgSrc, newAltText){

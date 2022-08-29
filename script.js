@@ -1,3 +1,20 @@
+const userInfoDiv = document.querySelector('.user-info-div');
+const pageStatusDiv = document.querySelector('.page_status-div');
+
+const pageCoveredText = `This page is already covered`;
+const pageNotCoveredtext = `Request for Volunteers to Interpred`;
+const requestSentText = `Request sent, waiting for volunteers`;
+
+chrome.storage.sync.get('user', function(result){
+    const user = result.user;
+
+    if(!user || !user.username || !user.role){
+        userInfoDiv.innerHTML = `You are not logged in`
+    }else{
+        userInfoDiv.innerHTML = `${user.role}: ${user.username}`
+    }
+})
+
 //OPTIONS BTN
 document.querySelector('.options-btn').addEventListener('click',()=>{
     chrome.runtime.openOptionsPage();
@@ -106,9 +123,52 @@ function getAndSendExtStatus(currentPageUrl){
 }
 
 function sendExtensionStatusToContentScript(status){
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, { message: 'extension_status', status });
-    });
+    chrome.storage.sync.get('user',function(result){
+        const user = result.user;
+        let role;
+        if(!user || !user.username || !user.role){
+            role = 'Consumer'
+        }else{
+            role = user.role;
+        }
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, { message: 'extension_status', status, role });
+        });
+    })
+}
+
+fetchPageData();
+
+function fetchPageData(){
+    getCurrentTab()
+    .then(tab=>{
+        const pageUrl = trimQueryParamsFromUrl(tab.url);
+
+        const response = {
+            page_status: 'request_sent', //covered, not_covered, request_sent
+            altText:[
+            {'img_src1':'alt_text1'},
+            {'img_src2':'alt_text2'}
+        ]}
+
+        switch (response.page_status) {
+            case 'covered':
+                pageStatusDiv.innerHTML = pageCoveredText;
+                pageStatusDiv.classList.remove('request-sent', 'not-covered')
+                pageStatusDiv.classList.add('covered')
+                break;
+            case 'not_covered':
+                pageStatusDiv.innerHTML = pageNotCoveredtext;
+                pageStatusDiv.classList.remove('request-sent', 'covered')
+                pageStatusDiv.classList.add('not-covered')
+                break;
+            case 'request_sent':
+                pageStatusDiv.innerHTML = requestSentText;
+                pageStatusDiv.classList.remove('covered', 'not-covered')
+                pageStatusDiv.classList.add('request-sent')
+                break;
+        }
+    })
 }
 
 // chrome.storage.sync.get('role', function (result) {

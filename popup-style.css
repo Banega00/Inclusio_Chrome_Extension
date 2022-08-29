@@ -1,11 +1,16 @@
 :root {
     --main-font-color: #ca3f64;
+    --page-covered-status-color: #14AE5C;
+    --page-not-covered-status-color: var(--main-font-color);
+    --request-sent: #969492;
 }
 
 body{
     width:400px;
     height:400px;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .popup-logo{
@@ -39,4 +44,30 @@ body{
     margin-left: auto;
     transform: translateY(-5px);
     cursor: pointer;
+}
+
+.user-info-div{
+    color: var(--main-font-color);
+    margin-bottom: 5px;
+}
+
+.page_status-div{
+    text-align: center;
+    margin-top: auto;
+    font-weight: 500;
+    padding: 3px;
+}
+
+.page_status-div.covered{
+    color: var(--page-covered-status-color)
+}
+
+.page_status-div.not-covered{
+    color: white;
+    background-color: var(--page-not-covered-status-color);
+    border-radius: 9999px;
+}
+
+.page_status-div.request-sent{
+    color: var(--request-sent);
 }
