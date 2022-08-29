@@ -32,6 +32,10 @@ c0.4,0.4,0.4,1,0,1.4C13.5,15.9,13.3,16,13,16z" />
 </svg>`
 const inclusioPinkColor = '#ca3f64';
 
+let changes = false;
+
+const backend_url = `http://localhost:3000`
+
 const galleryCSS= `
 .galleryDiv.hidden{
     display: none;
@@ -153,20 +157,41 @@ body{
     font-size: 1.2em;
 }
 
+.extension-header .discard-and-save-btn-container{
+    display: flex;
+}
+
+.extension-header .discard-and-save-btn-container.hidden{
+    visibility: hidden;
+}
+
 .extension-header .discardBtn{
     color: ${inclusioPinkColor};
     border: 3px solid ${inclusioPinkColor};
     padding: 3px 10px;
     border-radius: 9999px;
+    cursor: pointer;
+    transition: all .2s;
+}
 
+.extension-header .discardBtn:hover{
+    color: white;
+    background: ${inclusioPinkColor};
 }
 
 .extension-header .saveBtn{
     background-color: ${inclusioPinkColor};
     border: 3px solid ${inclusioPinkColor};
-    padding: 3px 10px;
     color: white;
+    padding: 3px 10px;
     border-radius: 9999px;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.extension-header .saveBtn:hover{
+    background-color: white;
+    color: ${inclusioPinkColor};
 }
 
 .vr{
@@ -320,8 +345,27 @@ function getImageAltTextFromStorage(imgSrc){
     });
 }
 
+function throttle (callback, limit) {
+    let wait = false;                  // Initially, we're not waiting
+    return function () {               // We return a throttled function
+        if (!wait) {                   // If we're not waiting
+            callback.call();           // Execute users function
+            wait = true;               // Prevent future invocations
+            setTimeout(function () {   // After a period of time
+                wait = false;          // And allow future invocations
+            }, limit);
+        }
+    }
+}
+
+function savePage(pageUrl, altText){
+    fetch(`${backend_url}/page`, {
+        method: 'POST',
+        
+    })
+}
+
 function extensionStatusChange(extStatus, role){
-    console.log("ROLE JE", role)
     if(role == 'Volunteer'){
         if(extStatus){
             if(document.querySelector('.extension-header') && extStatus == true) return;
@@ -331,9 +375,11 @@ function extensionStatusChange(extStatus, role){
             header.innerHTML = `
             <div class="logo">inclusio</div>
             <div class="selected-image" >No Image Selected</div>
-            <div class="discardBtn">Discard Changes</div>
-            <div class="vr"></div>
-            <div class="saveBtn">Save Changes</div>
+            <div class="discard-and-save-btn-container ${changes ? '' : 'hidden'}">
+                <div class="discardBtn">Discard Changes</div>
+                <div class="vr"></div>
+                <div class="saveBtn">Save Changes</div>
+            </div>
             `
             header.classList = "extension-header"
     
@@ -384,6 +430,7 @@ function extensionStatusChange(extStatus, role){
                         setTimeout(() => {
                             const parentATag = wrapper.closest('a')
                             if (parentATag) parentATag.href = 'javascript:void(0)'
+
     
                             //EDIT with edit pen
                             // const imageAltTextDiv = wrapperControls.querySelector('.img-alt-text-div')
@@ -408,6 +455,29 @@ function extensionStatusChange(extStatus, role){
     
     
             })
+
+            setTimeout(() =>{
+                const discardBtn = document.querySelector('.extension-header .discardBtn')
+                const saveBtn = document.querySelector('.extension-header .saveBtn')
+
+                discardBtn.addEventListener('click', function(){
+                    changes = false;
+                    window.location.reload();
+                })
+
+                const saveFnWithThrottle = throttle(function(){
+                    const allImages = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
+                    const obj = {};
+
+                    allImages.forEach(img =>{
+                        obj[img.src] = img.alt;
+                    })
+
+                    
+                },200)
+
+                saveBtn.addEventListener('click', saveFnWithThrottle)
+            }, 200)
     
             // setAltTextOfImageArrayToStorage(Array.from(images));
         } else {
@@ -635,6 +705,9 @@ function injectGalleryJavascript() {
     const debounceCb = debounce(() => {
         // changeImageAltTextInStorage(img.src, input.value);
         // imageAltTextDiv.innerText = input.value;
+
+        changes = true;
+        document.querySelector('.extension-header .discard-and-save-btn-container').classList.remove('hidden')
 
         selectedImgRef.alt = textarea.value;
         updateImageBorder(selectedImgRef);

@@ -129,7 +129,7 @@ function sendExtensionStatusToContentScript(status){
 }
 
 function setFirstLetter(word){
-    document.querySelector('.first-letter-div').innerHTML = word.charAt(0);
+    document.querySelector('.first-letter-div').innerHTML = word.charAt(0).toUpperCase();
 }
 
 function displayRole(role){

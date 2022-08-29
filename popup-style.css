@@ -83,6 +83,10 @@ body{
     
 }
 
+.user-info-div .username-div{
+    font-weight: bold;
+}
+
 .user-info-div .first-letter-div{
     height: 100%;
     aspect-ratio:1/1;
