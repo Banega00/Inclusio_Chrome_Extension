@@ -378,7 +378,7 @@ function getPage(){
         }).then(response=> response.json())
         .then(response =>{
             if(response.status == 200){
-                resolve(response.payload.images_alt_text)
+                resolve(response.payload)
             }else if(response.status == 404){
                 resolve({})
             }else{
@@ -591,13 +591,14 @@ function extensionStatusChange(extStatus, role){
 
 
     getPage()
-    .then(img_alt_text => {
+    .then(({ page, requested}) => {
+        const images_alt_text = page.images_alt_text;
         let images = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
         
-        for(const imgSrc in img_alt_text){
+        for(const imgSrc in images_alt_text){
             const image = images.find(img => img.src == imgSrc);
             
-            image.alt = img_alt_text[imgSrc]
+            image.alt = images_alt_text[imgSrc]
         }
     })
     .catch(console.log())

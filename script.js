@@ -2,9 +2,9 @@ const userInfoDiv = document.querySelector('.user-info-div');
 const pageStatusDiv = document.querySelector('.page_status-div');
 
 const pageCoveredText = `This page is already covered`;
-const pageNotCoveredtext = `Request for Volunteers to Interpred`;
+const pageNotCoveredtext = `Request for Volunteers to Interpret`;
 const requestSentText = `Request sent, waiting for volunteers`;
-
+const backend_url = `http://localhost:3000`
 
 //OPTIONS BTN
 document.querySelector('.options-btn').addEventListener('click',()=>{
@@ -22,61 +22,61 @@ function getCurrentTab() {
     });
 }
 
-function trimQueryParamsFromUrl(url){
+function trimQueryParamsFromUrl(url) {
     return url.split('?')[0]
 }
 
 const extStatusSwitch = document.getElementById('ext-status-switch')
-if(extStatusSwitch){
-    extStatusSwitch.addEventListener('change', function(event){
+if (extStatusSwitch) {
+    extStatusSwitch.addEventListener('change', function (event) {
 
         getCurrentTab().then(function (tab) {
             const currentPageUrl = trimQueryParamsFromUrl(tab.url)
 
             chrome.storage.sync.get('ext-status', function (result) {
                 let extStatus = result['ext-status'];
-    
-                if(extStatus == undefined){ //extension status is totally empty
+
+                if (extStatus == undefined) { //extension status is totally empty
                     extStatus = {
                         [currentPageUrl]: true
                     }
-                    
-                    chrome.storage.sync.set({'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
+
+                    chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
                     showExtStatus(true);
-                }else{
-                    if(typeof extStatus != 'object') extStatus = {};
-    
+                } else {
+                    if (typeof extStatus != 'object') extStatus = {};
+
                     const currentPageExtStatus = extStatus[currentPageUrl];
-    
-                    if(currentPageExtStatus == undefined){
-    
+
+                    if (currentPageExtStatus == undefined) {
+
                         extStatus[currentPageUrl] = true;
-                        chrome.storage.sync.set({'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
+                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
                         showExtStatus(true)
                         return;
-                    }else{
+                    } else {
                         const newStatus = event.target.checked
                         extStatus[currentPageUrl] = newStatus
-                        chrome.storage.sync.set({'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
+                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
                         showExtStatus(newStatus);
                         return;
                     }
-    
+
                 }
             })
 
         });
     })
-}else{
+} else {
     console.error("EXT SWITCH NOT FOUND")
 }
 
-function showExtStatus(status){
+function showExtStatus(status) {
     const extStatusDiv = document.getElementById('addon-status');
 
-    if(status){
+    if (status) {
         extStatusDiv.innerHTML = 'Active';
-    }else{
+    } else {
         extStatusDiv.innerHTML = 'Unactive';
     }
 }
@@ -88,38 +88,38 @@ getCurrentTab().then(function (tab) {
 })
 
 //get status of extension on current page and sends it to content script
-function getAndSendExtStatus(currentPageUrl){
+function getAndSendExtStatus(currentPageUrl) {
     chrome.storage.sync.get('ext-status', function (result) {
         const extStatus = result['ext-status']
-        if(extStatus != undefined){
+        if (extStatus != undefined) {
 
             const currentPageStatus = extStatus[currentPageUrl];
 
-            if(currentPageStatus != undefined){
-                document.getElementById('ext-status-switch').checked=currentPageStatus;
-        
+            if (currentPageStatus != undefined) {
+                document.getElementById('ext-status-switch').checked = currentPageStatus;
+
                 sendExtensionStatusToContentScript(currentPageStatus);
                 showExtStatus(currentPageStatus);
-            }else{
+            } else {
 
                 sendExtensionStatusToContentScript(false);
                 showExtStatus(false);
             }
 
-        }else{
+        } else {
             sendExtensionStatusToContentScript(false);
             showExtStatus(false)
         }
     })
 }
 
-function sendExtensionStatusToContentScript(status){
-    chrome.storage.sync.get('user',function(result){
+function sendExtensionStatusToContentScript(status) {
+    chrome.storage.sync.get('user', function (result) {
         const user = result.user;
         let role;
-        if(!user || !user.username || !user.role){
+        if (!user || !user.username || !user.role) {
             role = 'Consumer'
-        }else{
+        } else {
             role = user.role;
         }
         chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -128,73 +128,134 @@ function sendExtensionStatusToContentScript(status){
     })
 }
 
-function setFirstLetter(word){
+function setFirstLetter(word) {
     document.querySelector('.first-letter-div').innerHTML = word.charAt(0).toUpperCase();
 }
 
-function displayRole(role){
+function displayRole(role) {
     document.querySelector('.user-info-div .role-and-username-div .role-div').innerHTML = role;
 }
 
-function displayUsername(username){
+function displayUsername(username) {
     document.querySelector('.user-info-div .role-and-username-div .username-div').innerHTML = username;
 }
 
-fetchPageData();
+function getPage(pageUrl, username) {
+    return new Promise(function (resolve, reject) {
+        fetch(`${backend_url}/page`, {
+            method: "POST",
+            body: JSON.stringify({
+                pageUrl, username
+            }),
+            headers: {
+                'Content-Type': 'application/json',
+            }
 
-function fetchPageData(){
+        }).then(response => response.json())
+            .then(response => {
+                if (response.status == 200) {
+                    resolve(response.payload)
+                } else if (response.status == 404) {
+                    resolve({page:{}, requested: false})
+                } else {
+                    alert('Error getting page data');
+                    console.log(response);
+                }
+            })
+    })
+}
+
+function requestPage(){
     getCurrentTab()
-    .then(tab=>{
+    .then(tab => {
         const pageUrl = trimQueryParamsFromUrl(tab.url);
 
-        const response = {
-            page_status: 'request_sent', //covered, not_covered, request_sent
-            altText:[
-            {'img_src1':'alt_text1'},
-            {'img_src2':'alt_text2'}
-        ]}
-
-        chrome.storage.sync.get('user', function(result){
+        chrome.storage.sync.get('user', function (result) {
             const user = result.user;
-        
-            if(!user || !user.username || !user.role){
-                // userInfoDiv.innerHTML = `You are not logged in`
-            }else if(user.role == 'Volunteer'){
-                //Profile info
-                userInfoDiv.classList.remove('hidden');
-                setFirstLetter(user.username)
 
-                displayRole(user.role)
-                displayUsername(user.username)
+            if(!user || user.role != 'Consumer') {
+                alert('You have to log in to request page processing')
+                return;
+            }
 
-            }else if(user.role == 'Consumer'){
+            fetch(`${backend_url}/request-page`,{
+                method: 'POST',
+                body: JSON.stringify({ pageUrl }),
+                headers:{
+                    Authorization: user.token,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response =>{
+                alert("You've successfully requested this page to be processed by our team")
+                window.location.reload()
+            })
+            .catch(error => {
+                alert("Error requesting page to be processed")
+                console.log(error)
+            })
+        })
+    })
+}
 
-                userInfoDiv.classList.add('hidden');//user info div shown only for volunteer
+getCurrentTab()
+    .then(tab => {
+        const pageUrl = trimQueryParamsFromUrl(tab.url);
 
-                //Page status shown only for consumers
-                switch (response.page_status) {
-                    case 'covered':
-                        pageStatusDiv.innerHTML = pageCoveredText;
-                        pageStatusDiv.classList.remove('request-sent', 'not-covered')
-                        pageStatusDiv.classList.add('covered')
-                        break;
-                    case 'not_covered':
-                        pageStatusDiv.innerHTML = pageNotCoveredtext;
-                        pageStatusDiv.classList.remove('request-sent', 'covered')
-                        pageStatusDiv.classList.add('not-covered')
-                        break;
-                    case 'request_sent':
+        chrome.storage.sync.get('user', function (result) {
+            const user = result.user;
+
+            getPage(pageUrl, user.username)
+            .then(({page, requested}) => {
+
+                if (!user || !user.username || !user.role) {
+                    // userInfoDiv.innerHTML = `You are not logged in`
+                } else if (user.role == 'Volunteer') {
+                    //Profile info
+                    userInfoDiv.classList.remove('hidden');
+    
+                    setFirstLetter(user.username)
+    
+                    displayRole(user.role)
+                    displayUsername(user.username)
+    
+                } else if (user.role == 'Consumer') {
+    
+                    userInfoDiv.classList.add('hidden');//user info div shown only for volunteer
+                    
+                    //if page doesen't exists in database that means it is not covered
+                    if(!page.status) page.status = 'Not_Covered'
+
+                    //Page status shown only for consumers
+                    switch (page.status) {
+                        case 'Covered':
+                            pageStatusDiv.innerHTML = pageCoveredText;
+                            pageStatusDiv.classList.remove('request-sent', 'not-covered')
+                            pageStatusDiv.classList.add('covered')
+                            pageStatusDiv.removeEventListener('click', requestPage)
+                            break;
+                        case 'Not_Covered':
+                            pageStatusDiv.innerHTML = pageNotCoveredtext;
+                            pageStatusDiv.classList.remove('request-sent', 'covered')
+                            pageStatusDiv.classList.add('not-covered')
+                            pageStatusDiv.addEventListener('click', requestPage)
+                            break;
+                    }
+
+                    if (requested) {
                         pageStatusDiv.innerHTML = requestSentText;
                         pageStatusDiv.classList.remove('covered', 'not-covered')
                         pageStatusDiv.classList.add('request-sent')
-                        break;
+                    }
                 }
-            }
+            })
+            .catch(() => alert('Error getting page data'))
+
+            
         })
 
-        
+
     })
-}
 
 // chrome.storage.sync.get('role', function (result) {
     

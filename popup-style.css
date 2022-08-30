@@ -53,6 +53,8 @@ body{
     margin-top: auto;
     font-weight: 500;
     padding: 3px;
+    border-top: 1px solid rgb(182, 182, 182);
+    padding-top: 5px;
 }
 
 .page_status-div.covered{
@@ -63,6 +65,14 @@ body{
     color: white;
     background-color: var(--page-not-covered-status-color);
     border-radius: 9999px;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.page_status-div.not-covered:hover{
+    color: var(--page-not-covered-status-color);
+    background-color: white;
+    border: 2px solid var(--page-not-covered-status-color);
 }
 
 .page_status-div.request-sent{
@@ -80,7 +90,8 @@ body{
 }
 
 .user-info-div .role-and-username-div{
-    
+    border-top: 1px solid rgb(182, 182, 182);
+    padding-top: 5px;
 }
 
 .user-info-div .username-div{
@@ -101,4 +112,25 @@ body{
     justify-content: center;
     font-size: 1.6em;
     font-weight: 500;
+}
+
+.requested-site{
+    display: flex;
+    align-items: center;
+}
+
+.requested-site .site{ 
+    color:rgb(162, 162, 162)
+}
+
+.requested-site .num-of-requests{
+    background-color: rgb(162, 162, 162);
+    border-radius: 50%;
+    width: 1.3em;
+    height: 1.3em;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
 }
