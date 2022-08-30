@@ -8,6 +8,7 @@
 body{
     width:400px;
     height:400px;
+    max-height: 400px;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -90,7 +91,6 @@ body{
 }
 
 .user-info-div .role-and-username-div{
-    border-top: 1px solid rgb(182, 182, 182);
     padding-top: 5px;
 }
 
@@ -112,6 +112,11 @@ body{
     justify-content: center;
     font-size: 1.6em;
     font-weight: 500;
+}
+
+.sites-container{
+    height: 65%;
+    overflow: auto;
 }
 
 .requested-site{

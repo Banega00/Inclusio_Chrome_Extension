@@ -1,5 +1,6 @@
 const userInfoDiv = document.querySelector('.user-info-div');
 const pageStatusDiv = document.querySelector('.page_status-div');
+const sitesContainer = document.querySelector('.sites-container');
 
 const pageCoveredText = `This page is already covered`;
 const pageNotCoveredtext = `Request for Volunteers to Interpret`;
@@ -198,6 +199,36 @@ function requestPage(){
     })
 }
 
+function getRequestedPages(){
+    return new Promise(function (resolve, reject) {
+        chrome.storage.sync.get('user', function (result) {
+            const user = result.user;
+            const token = user.token;
+            if(!token){
+                console.log("You are not authorize to fetch requested pages")
+                return;
+            }
+
+            fetch(`${backend_url}/requested-pages`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: token
+                }
+    
+            }).then(response => response.json())
+                .then(response => {
+                    if (response.status == 200) {
+                        resolve(response.payload)
+                    } else {
+                        alert('Error getting pages data');
+                        console.log(response);
+                    }
+                })
+        })
+        
+    })
+}
+
 getCurrentTab()
     .then(tab => {
         const pageUrl = trimQueryParamsFromUrl(tab.url);
@@ -211,6 +242,20 @@ getCurrentTab()
                 if (!user || !user.username || !user.role) {
                     // userInfoDiv.innerHTML = `You are not logged in`
                 } else if (user.role == 'Volunteer') {
+
+                    getRequestedPages()
+                    .then(pagesArray=>{
+                        pagesArray.forEach(requestedPage => {
+                            const pageDiv = `
+                        <div class="requested-site">
+                            <div class="num-of-requests">${requestedPage.requests}</div>
+                            <a class="site" href="${requestedPage.page.page_url}">${requestedPage.page.page_url}</a>
+                        </div>`
+                            sitesContainer.insertAdjacentHTML('beforeend', pageDiv)
+                        })
+                    })
+                    .catch(console.log)
+
                     //Profile info
                     userInfoDiv.classList.remove('hidden');
     
