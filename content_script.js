@@ -359,9 +359,46 @@ function throttle (callback, limit) {
 }
 
 function savePage(pageUrl, altText){
-    fetch(`${backend_url}/page`, {
-        method: 'POST',
-        
+    chrome.storage.sync.get('user', function (result) {
+        const user = result['user']
+        console.log("OVO JE USER", user)
+        if(!user || !user.token){
+            alert("You have to be logged in to perform this operation!");
+            return;
+        }else{
+
+            fetch(`${backend_url}/page`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    pageUrl,
+                    altText
+                }),
+                headers:{
+                    'Content-Type': 'application/json',
+                    Authorization: user.token
+                }
+
+            }).then(response=> response.json())
+            .then(response =>{
+                if(response.status == 200){
+                    alert("Page successfully saved")
+                    //hide save and discard btns
+
+                    changes = true;
+                    document.querySelector('.extension-header .discard-and-save-btn-container')
+                    .classList.add('hidden');
+                }else if(response.status == 401){
+                    alter("You don't have permission to executi this operation")
+                }else{
+                    alert('Error saving page');
+                    console.log(response);
+                }
+            })
+            .catch(error=>{
+                alert('Error saving page');
+                console.log(error);
+            })
+        }
     })
 }
 
@@ -388,7 +425,7 @@ function extensionStatusChange(extStatus, role){
     
             let images = document.querySelectorAll('img:not(.gallery-img)');
             images = filterDuplicateImagesBySrc(images);
-            chrome.storage.sync.set({})
+
             images.forEach(img => {
                 const parent = img.parentNode
                 const wrapper = document.createElement('div')
@@ -467,13 +504,14 @@ function extensionStatusChange(extStatus, role){
 
                 const saveFnWithThrottle = throttle(function(){
                     const allImages = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
-                    const obj = {};
+                    const altText = {};
 
                     allImages.forEach(img =>{
-                        obj[img.src] = img.alt;
+                        altText[img.src] = img.alt;
                     })
+                    const pageUrl = trimQueryParamsFromUrl(window.location.href);
 
-                    
+                    savePage(pageUrl, altText)
                 },200)
 
                 saveBtn.addEventListener('click', saveFnWithThrottle)
