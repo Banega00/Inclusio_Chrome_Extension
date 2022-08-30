@@ -345,6 +345,58 @@ function getImageAltTextFromStorage(imgSrc){
     });
 }
 
+function getExtensionStatus(){
+
+    return new Promise(function (resolve, reject) {
+        chrome.storage.sync.get('ext-status', function (result) {
+            const extStatus = result['ext-status']
+            const pageUrl = trimQueryParamsFromUrl(window.location.href);
+            resolve(extStatus[pageUrl])
+    })})
+}
+
+function getUser(){
+    return new Promise(function (resolve, reject) {
+        chrome.storage.sync.get('user', function (result) {
+            const user = result['user']
+            resolve(user)
+    })})
+}
+
+function getPage(){
+    return new Promise(function (resolve, reject) {
+        const pageUrl = trimQueryParamsFromUrl(window.location.href);
+        fetch(`${backend_url}/page`, {
+            method: "POST",
+            body: JSON.stringify({
+                pageUrl,
+            }),
+            headers:{
+                'Content-Type': 'application/json',
+            }
+
+        }).then(response=> response.json())
+        .then(response =>{
+            if(response.status == 200){
+                resolve(response.payload.images_alt_text)
+            }else if(response.status == 404){
+                resolve({})
+            }else{
+                alert('Error getting page data');
+                console.log(response);
+            }
+        })
+    })
+}
+
+//executes on page load
+Promise.all([getUser(), getExtensionStatus()])
+.then(userAndStatus =>{
+    const [user, status] = userAndStatus;
+    
+    extensionStatusChange(status, user.role)
+})
+
 function throttle (callback, limit) {
     let wait = false;                  // Initially, we're not waiting
     return function () {               // We return a throttled function
@@ -361,7 +413,6 @@ function throttle (callback, limit) {
 function savePage(pageUrl, altText){
     chrome.storage.sync.get('user', function (result) {
         const user = result['user']
-        console.log("OVO JE USER", user)
         if(!user || !user.token){
             alert("You have to be logged in to perform this operation!");
             return;
@@ -535,6 +586,21 @@ function extensionStatusChange(extStatus, role){
         })
     }
     
+
+    //for both roles update image alt texts
+
+
+    getPage()
+    .then(img_alt_text => {
+        let images = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
+        
+        for(const imgSrc in img_alt_text){
+            const image = images.find(img => img.src == imgSrc);
+            
+            image.alt = img_alt_text[imgSrc]
+        }
+    })
+    .catch(console.log())
 }
 
 function changeImageAltTextInStorage(imgSrc, newAltText){
