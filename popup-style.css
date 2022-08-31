@@ -133,6 +133,7 @@ body{
     border-radius: 50%;
     width: 1.3em;
     height: 1.3em;
+    aspect-ratio: 1/1;
     color: white;
     display: flex;
     align-items: center;
