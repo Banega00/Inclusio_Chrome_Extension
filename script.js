@@ -229,6 +229,43 @@ function getRequestedPages(){
     })
 }
 
+function fetchRequestedPagesPeriodically() {
+    //fetch first - then turn on interval
+    getRequestedPages()
+        .then(pagesArray => {
+            while (sitesContainer.firstChild) {
+                myNode.removeChild(myNode.lastChild);
+            }
+            pagesArray.forEach(requestedPage => {
+                const pageDiv = `
+                            <div class="requested-site">
+                                <div class="num-of-requests">${requestedPage.requests}</div>
+                                <a class="site" href="${requestedPage.page.page_url}">${requestedPage.page.page_url}</a>
+                            </div>`
+                sitesContainer.insertAdjacentHTML('beforeend', pageDiv)
+            })
+        })
+        .catch(console.log)
+
+    setInterval(() => {
+        getRequestedPages()
+            .then(pagesArray => {
+                while (sitesContainer.firstChild) {
+                    myNode.removeChild(myNode.lastChild);
+                }
+                pagesArray.forEach(requestedPage => {
+                    const pageDiv = `
+                            <div class="requested-site">
+                                <div class="num-of-requests">${requestedPage.requests}</div>
+                                <a class="site" href="${requestedPage.page.page_url}">${requestedPage.page.page_url}</a>
+                            </div>`
+                    sitesContainer.insertAdjacentHTML('beforeend', pageDiv)
+                })
+            })
+            .catch(console.log)
+    }, 5000)
+}
+
 getCurrentTab()
     .then(tab => {
         const pageUrl = trimQueryParamsFromUrl(tab.url);
@@ -243,18 +280,9 @@ getCurrentTab()
                     // userInfoDiv.innerHTML = `You are not logged in`
                 } else if (user.role == 'Volunteer') {
 
-                    getRequestedPages()
-                    .then(pagesArray=>{
-                        pagesArray.forEach(requestedPage => {
-                            const pageDiv = `
-                        <div class="requested-site">
-                            <div class="num-of-requests">${requestedPage.requests}</div>
-                            <a class="site" href="${requestedPage.page.page_url}">${requestedPage.page.page_url}</a>
-                        </div>`
-                            sitesContainer.insertAdjacentHTML('beforeend', pageDiv)
-                        })
-                    })
-                    .catch(console.log)
+                    sitesContainer.innerHTML = ``
+
+                    fetchRequestedPagesPeriodically();
 
                     //Profile info
                     userInfoDiv.classList.remove('hidden');
