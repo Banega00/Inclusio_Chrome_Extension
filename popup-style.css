@@ -24,26 +24,18 @@ body{
     margin-bottom: 20px;;
 }
 
+.title-div > svg{
+    margin-right: 30px;
+}
+
 .title-div > *{
     margin-right: 5px;
-}
-
-.title-div .title-div-1{
-    color: var(--main-font-color);
-    font-size: 1.6em;
-    font-weight: bold;
-}
-
-.title-div .title-div-2{
-    font-size: 1.6em;
-    color:#A79197;
 }
 
 .options-btn{
     width: 1.5em;
     height: 1.5em;
     margin-left: auto;
-    transform: translateY(-5px);
     cursor: pointer;
 }
 

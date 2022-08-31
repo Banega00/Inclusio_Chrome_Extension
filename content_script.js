@@ -30,6 +30,12 @@ c0.4,0.4,0.4,1,0,1.4C13.5,15.9,13.3,16,13,16z" />
     </g>
 </g>
 </svg>`
+
+const noDescriptionSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 95.93 79.67"><defs><style>.d{fill:#f4f4f4;}</style></defs><g id="a"/><g id="b"><g id="c"><path class="d" d="M94.08,61.94L57.65,5.28c-4.53-7.04-14.83-7.04-19.36,0L1.85,61.94c-4.93,7.66,.57,17.73,9.68,17.73H84.41c9.11,0,14.6-10.07,9.68-17.73Zm-46.12,8.38h0c-2.98,0-5.4-2.42-5.4-5.4s2.42-5.4,5.4-5.4h0c2.98,0,5.4,2.42,5.4,5.4s-2.42,5.4-5.4,5.4Zm6.24-42.46l-2.54,23.7c-.2,1.89-1.8,3.32-3.69,3.32h0c-1.9,0-3.49-1.43-3.69-3.32l-2.54-23.7c-.4-3.71,2.51-6.94,6.24-6.94h0c3.73,0,6.63,3.23,6.24,6.94Z"/></g></g></svg>`
+const hasDescriptionSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 81.9 81.91"><defs><style>.d{fill:#f4f4f4;}</style></defs><g id="a"/><g id="b"><g id="c"><path class="d" d="M45.97,.31h0C23.53-2.46,3.09,13.49,.31,35.93c-2.78,22.44,13.17,42.89,35.61,45.66,22.44,2.78,42.89-13.17,45.66-35.61C84.36,23.53,68.42,3.09,45.97,.31Zm20.24,31.39s0,0-.01,.02h0l-28.13,34.31-20.56-18.16c-2.24-1.97-2.46-5.39-.49-7.64h0c1.97-2.25,5.39-2.47,7.64-.49h0l12.14,10.72,21.02-25.63c1.89-2.3,5.29-2.64,7.6-.76,2.32,1.89,2.67,5.29,.78,7.61Z"/></g></g></svg>`
+
+const inclusioLogo = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 311 60.85"><defs><style>.cls-1{fill:url(#linear-gradient);}</style><linearGradient id="linear-gradient" x1="155.5" y1="60.85" x2="155.5" gradientUnits="userSpaceOnUse"><stop offset="0.33" stop-color="#d4425b"/><stop offset="1" stop-color="#b83d74"/></linearGradient></defs><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><g id="Group_903" data-name="Group 903"><path id="Path_394" data-name="Path 394" class="cls-1" d="M112.42,55.35a4.13,4.13,0,0,1-4.12-4.12V26.86a4.12,4.12,0,1,1,8.24,0h0V51.23A4.12,4.12,0,0,1,112.42,55.35Zm161.17-4.12V26.86a4.12,4.12,0,1,0-8.24,0h0V51.23a4.13,4.13,0,0,0,4.12,4.12h0a4.12,4.12,0,0,0,4.12-4.12Zm-75,0V14.16a4.12,4.12,0,0,0-8.23,0V51.23a4.12,4.12,0,1,0,8.23,0Zm-47.7,0V36.64a13.9,13.9,0,0,0-27.8,0V51.23a4.12,4.12,0,0,0,8.24,0V36.64a5.66,5.66,0,0,1,11.32,0V51.23a4.12,4.12,0,0,0,8.24,0Zm81.68-9.78V26.86a4.12,4.12,0,0,0-8.24,0V41.45a5.66,5.66,0,0,1-11.32,0V26.86a4.12,4.12,0,1,0-8.24,0V41.45a13.9,13.9,0,0,0,27.8,0ZM311,39.05a16.22,16.22,0,1,0-16.22,16.21A16.24,16.24,0,0,0,311,39.05Zm-8.24,0a8,8,0,1,1-8-8,8,8,0,0,1,8,8ZM183.6,49.28a4.12,4.12,0,1,0-6.39-5.2h0a8,8,0,1,1-.09-10.18,4.12,4.12,0,0,0,5.81.49h0a4.12,4.12,0,0,0,.49-5.8,16.22,16.22,0,1,0,.18,20.69Zm-66.1-34.6a5.07,5.07,0,0,0-5.08-5.08h0a5.08,5.08,0,1,0,5.08,5.08Zm157.22,0a5.08,5.08,0,1,0-5.07,5.08,5.07,5.07,0,0,0,5.07-5.08ZM61.56,0A20.65,20.65,0,0,0,41.31,20.65,20.66,20.66,0,0,0,21.06,0C9.48-.22,0,9.48,0,21.06v3A41.32,41.32,0,0,0,12.24,53.43h0a41.52,41.52,0,0,0,10.22,7.42V35.64A3.55,3.55,0,0,1,25.8,32a3.45,3.45,0,0,1,3.56,3.35v7.8a1.14,1.14,0,0,0,1.14,1.14h.05a1.14,1.14,0,0,0,1.14-1.14v-14A3.55,3.55,0,0,1,35,25.6a3.45,3.45,0,0,1,3.56,3.34V43.19a1.14,1.14,0,0,0,1.14,1.14h.09A1.15,1.15,0,0,0,41,43.19h0V25.49a3.55,3.55,0,0,1,3.35-3.6,3.45,3.45,0,0,1,3.55,3.35v18A1.14,1.14,0,0,0,49,44.33h0a1.14,1.14,0,0,0,1.14-1.14h0v-14A3.54,3.54,0,0,1,53.5,25.6,3.45,3.45,0,0,1,57.06,29v24a.48.48,0,0,0,.87.28l2-3a3.55,3.55,0,0,1,4.8-1.06,3.47,3.47,0,0,1,1,4.78l-.06.09-4.16,6a41.33,41.33,0,0,0,8.81-6.64h0A41.33,41.33,0,0,0,82.63,24.09v-3C82.62,9.48,73.14-.22,61.56,0M241.84,45.2c1.43,0,2.4,1.16,3.39,2.08s2,2.07,4,2.07c2.46,0,3.79-1,3.79-2.89s-1.38-2.87-5.67-4.23C239,39.59,237.08,36.7,237.08,32c0-4.18,2.61-9.67,11.72-9.67,4.68,0,7.7,1.47,9.52,3.59a3.94,3.94,0,0,1-3.07,6.44h0a4.06,4.06,0,0,1-3.48-2.09,3.47,3.47,0,0,0-3.27-1.61c-1.87,0-3,.94-3,2.59s1.24,2.5,5.36,3.72c8,2.4,10.62,5.4,10.62,10.53,0,6.6-4.94,10.15-12.56,10.15-4.9,0-8.41-1.52-10.49-4.15a3.92,3.92,0,0,1,3.08-6.34Z"/></g></g></g></svg>'
+
 const inclusioPinkColor = '#ca3f64';
 
 let changes = false;
@@ -148,7 +154,7 @@ body{
     overflow: hidden;
     background-color: white;
     position: sticky;
-    height: 10vh;
+    min-height: 10vh;
     box-shadow: 0px 5px 11px -1px rgba(0,0,0,0.75);
     top:0;
     z-index: 10;
@@ -167,11 +173,8 @@ body{
     color: ${inclusioPinkColor};
 }
 
-.extension-header .logo{
-    color: ${inclusioPinkColor};
-    font-size: 1.75em;
-    font-weight: bold;
-    padding-left: 20px;
+.extension-header .logo svg{
+    height: 2.2rem;
 }
 
 .extension-header .selected-image{
@@ -258,6 +261,13 @@ body{
 
 .img-wrapper-div .wrapper-controls .img-alt-text-div{
     font-size: 1rem;
+    display: flex;
+    align-items: flex-end;
+}
+
+.img-wrapper-div .wrapper-controls .img-alt-text-div svg{
+    width: 1.5rem;
+    margin-right: 10px;
 }
 
 .img-wrapper-div .wrapper-controls .hidden{
@@ -558,7 +568,7 @@ function extensionStatusChange(extStatus, role, showNotification){
                 const body = document.querySelector('body')
                 const header = document.createElement('div')
                 header.innerHTML = `
-                <div class="logo">inclusio</div>
+                <div class="logo">${inclusioLogo}</div>
                 <div class="selected-image" >No Image Selected</div>
                 <div class="discard-and-save-btn-container ${changes ? '' : 'hidden'}">
                     <div class="discardBtn">Discard Changes</div>
@@ -585,16 +595,13 @@ function extensionStatusChange(extStatus, role, showNotification){
                     wrapperControls.classList.add('wrapper-controls')
                     let imageStatusMessage = ''
 
-                
-        
-        
                             const altText = images_alt_text[img.src]
                             if (!altText.trim()) {
                                 wrapper.classList.add('no-alt-text')
-                                imageStatusMessage = 'No Description'
+                                imageStatusMessage = `${noDescriptionSvg} No Description`
                     } else {
                         wrapper.classList.add('has-alt-text')
-                        imageStatusMessage = 'Has Description';
+                        imageStatusMessage = `${hasDescriptionSvg} Has Description`;
                     }
                     parent.replaceChild(wrapper, img);
                     wrapper.appendChild(img);
@@ -957,11 +964,11 @@ function updateImageBorder(selectedImageReference){
     if(selectedImageReference.alt){
         selectedImageWrapperDiv.classList.add("has-alt-text")
         selectedImageWrapperDiv.classList.remove("no-alt-text");
-        textDiv.innerHTML = "Has Description"
+        textDiv.innerHTML = `${hasDescriptionSvg} Has Description`
     }else{
         selectedImageWrapperDiv.classList.add("no-alt-text")
         selectedImageWrapperDiv.classList.remove("has-alt-text")
-        textDiv.innerHTML = "No Description"
+        textDiv.innerHTML = `${noDescriptionSvg} No Description`
     }
     extensionHeaderImageTitleUpdateByImage(selectedImageReference)
 }
