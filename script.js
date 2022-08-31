@@ -85,7 +85,16 @@ function showExtStatus(status) {
 
 getCurrentTab().then(function (tab) {
     const currentPageUrl = trimQueryParamsFromUrl(tab.url);
-    getAndSendExtStatus(currentPageUrl)
+
+    //send extension status only if true
+    chrome.storage.sync.get('ext-status', function (result) {
+        const extStatus = result['ext-status']
+        if(extStatus[currentPageUrl] == true){
+            getAndSendExtStatus(currentPageUrl)
+        }else{
+            showExtStatus(false);
+        }
+    })
 })
 
 //get status of extension on current page and sends it to content script

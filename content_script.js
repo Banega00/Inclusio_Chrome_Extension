@@ -113,6 +113,28 @@ const galleryCSS= `
 .galleryDiv .next-img-svg-div{
     transform: rotateY(180deg);
 }`
+
+const extensionStatusDivStyle = `
+
+.extension-status-div{
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 20px;
+    border-radius: 5px;
+    z-index: 100;
+    color: white;
+    transition: .2s all;
+}
+.extension-status-div.on{
+    background-color: green;
+}
+
+.extension-status-div.off{
+    background-color: ${inclusioPinkColor};
+}
+`
+
 const css = `
 *{
     box-sizing: border-box;
@@ -281,9 +303,12 @@ body{
     background:rgba(0,0,0,0.75);
     overflow: auto;
 }
+${extensionStatusDivStyle}
 
 ${galleryCSS}
 `
+
+loadCSS(extensionStatusDivStyle)
 
 let selectedImgRef = undefined;
 
@@ -417,7 +442,9 @@ Promise.all([getUser(), getExtensionStatus()])
 .then(userAndStatus =>{
     const [user, status] = userAndStatus;
     
-    extensionStatusChange(status, user.role)
+    if(status){
+        extensionStatusChange(status, user.role)
+    }
 })
 
 function throttle (callback, limit) {
@@ -637,19 +664,24 @@ function extensionStatusChange(extStatus, role){
             // setAltTextOfImageArrayToStorage(Array.from(images));
         } else {
             const extHeader = document.querySelector('.extension-header');
-    
+            
             if(extHeader){
-                window.location.reload();
+                showExtensionStatusMessage(false)
+
+                setTimeout(() => window.location.reload(),500)
             }
         }
     }else if(role == 'Consumer'){
+        if(extStatus === false){
+            showExtensionStatusMessage(false)
+            setTimeout(() => window.location.reload(),500)
+        }
         //change images alt text
     
-        //1 - fetch 
-        const allImages = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
-        allImages.forEach(img =>{
+        // const allImages = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
+        // allImages.forEach(img =>{
 
-        })
+        // })
     }
     
 
@@ -670,7 +702,21 @@ function extensionStatusChange(extStatus, role){
             }
         })
         .catch(console.log)
+
+        showExtensionStatusMessage(true);//true means on
     }
+}
+
+function showExtensionStatusMessage(flag){
+    const extensionStatusDiv = document.createElement('div')
+    extensionStatusDiv.classList.add('extension-status-div',flag ? 'on' : 'off')
+    extensionStatusDiv.innerHTML = flag ? 'Inclusio turned on' : 'Inclusio turned off'
+    document.body.appendChild(extensionStatusDiv)
+
+    setTimeout(()=>{
+        console.log("GASIM")
+        document.body.removeChild(extensionStatusDiv)
+    },1500)
 }
 
 function changeImageAltTextInStorage(imgSrc, newAltText){
@@ -956,3 +1002,43 @@ function injectGalleryContent(galleryDiv){
     `
 }
 
+
+function keyPress(e) {
+    var evtobj = window.event? event : e
+    if (evtobj.keyCode == 90 && evtobj.ctrlKey){
+        getUser()
+        .then(user =>{
+            const currentPageUrl = trimQueryParamsFromUrl(window.location.href);
+            chrome.storage.sync.get('ext-status', function (result) {
+                let extStatus = result['ext-status'];
+    
+                if (extStatus == undefined) { //extension status is totally empty
+                    extStatus = {
+                        [currentPageUrl]: true
+                    }
+    
+                    chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role))
+                } else {
+                    if (typeof extStatus != 'object') extStatus = {};
+    
+                    const currentPageExtStatus = extStatus[currentPageUrl];
+    
+                    if (currentPageExtStatus == undefined) {
+    
+                        extStatus[currentPageUrl] = true;
+                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role))
+                        return;
+                    } else {
+                        extStatus[currentPageUrl] = !currentPageExtStatus
+                        console.log("MENJAM U: ",extStatus[currentPageUrl])
+                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role))
+                        return;
+                    }
+    
+                }
+            })
+        })
+    }
+}
+
+document.onkeydown = keyPress;
