@@ -443,7 +443,7 @@ Promise.all([getUser(), getExtensionStatus()])
     const [user, status] = userAndStatus;
     
     if(status){
-        extensionStatusChange(status, user.role)
+        extensionStatusChange(status, user.role, true)
     }
 })
 
@@ -534,7 +534,7 @@ function publishPage(){
     })
 }
 
-function extensionStatusChange(extStatus, role){
+function extensionStatusChange(extStatus, role, showNotification){
     if(role == 'Volunteer'){
         if(extStatus){
             if(document.querySelector('.extension-header') && extStatus == true) return;
@@ -666,14 +666,18 @@ function extensionStatusChange(extStatus, role){
             const extHeader = document.querySelector('.extension-header');
             
             if(extHeader){
-                showExtensionStatusMessage(false)
+                if(showNotification){
+                    showExtensionStatusMessage(false)
+                }
 
                 setTimeout(() => window.location.reload(),500)
             }
         }
     }else if(role == 'Consumer'){
         if(extStatus === false){
-            showExtensionStatusMessage(false)
+            if(showNotification){
+                showExtensionStatusMessage(false)
+            }
             setTimeout(() => window.location.reload(),500)
         }
         //change images alt text
@@ -703,18 +707,19 @@ function extensionStatusChange(extStatus, role){
         })
         .catch(console.log)
 
-        showExtensionStatusMessage(true);//true means on
+        if(showNotification){
+            showExtensionStatusMessage(true);//true means on
+        }
     }
 }
 
-function showExtensionStatusMessage(flag){
+function showExtensionStatusMessage(flag, message){
     const extensionStatusDiv = document.createElement('div')
     extensionStatusDiv.classList.add('extension-status-div',flag ? 'on' : 'off')
-    extensionStatusDiv.innerHTML = flag ? 'Inclusio turned on' : 'Inclusio turned off'
+    extensionStatusDiv.innerHTML = message ? message : (flag ? 'Inclusio turned on' : 'Inclusio turned off')
     document.body.appendChild(extensionStatusDiv)
 
     setTimeout(()=>{
-        console.log("GASIM")
         document.body.removeChild(extensionStatusDiv)
     },1500)
 }
@@ -1005,7 +1010,9 @@ function injectGalleryContent(galleryDiv){
 
 function keyPress(e) {
     var evtobj = window.event? event : e
-    if (evtobj.keyCode == 90 && evtobj.ctrlKey){
+
+    
+    if (evtobj.keyCode == 90 && evtobj.ctrlKey){//CTRL + Z
         getUser()
         .then(user =>{
             const currentPageUrl = trimQueryParamsFromUrl(window.location.href);
@@ -1017,7 +1024,7 @@ function keyPress(e) {
                         [currentPageUrl]: true
                     }
     
-                    chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role))
+                    chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role, true))
                 } else {
                     if (typeof extStatus != 'object') extStatus = {};
     
@@ -1026,19 +1033,52 @@ function keyPress(e) {
                     if (currentPageExtStatus == undefined) {
     
                         extStatus[currentPageUrl] = true;
-                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role))
+                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role, true))
                         return;
                     } else {
                         extStatus[currentPageUrl] = !currentPageExtStatus
-                        console.log("MENJAM U: ",extStatus[currentPageUrl])
-                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role))
+                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role, true))
                         return;
                     }
     
                 }
             })
         })
+    }else if(evtobj.keyCode == 88 && evtobj.ctrlKey){//CTRL + X
+        const currentPageUrl = trimQueryParamsFromUrl(window.location.href);
+        chrome.storage.sync.get('ext-status', function (result) {
+            let extStatus = result['ext-status'];
+
+            if(extStatus[currentPageUrl] == true){
+                requestPage(currentPageUrl);
+
+            }
+        })
     }
+}
+
+function requestPage(pageUrl){
+    chrome.storage.sync.get('user', function (result) {
+        const user = result.user;
+        if(!user || !user.token) return;
+
+        fetch(`${backend_url}/request-page`,{
+            method: 'POST',
+            body: JSON.stringify({ pageUrl }),
+            headers:{
+                Authorization: user.token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response =>{
+            if(response.status == 200){
+                showExtensionStatusMessage(true, 'Page requested for processing')
+            }
+        })
+        .catch(error => {
+            console.log(error)
+        })
+    })
 }
 
 document.onkeydown = keyPress;
