@@ -33,6 +33,7 @@ c0.4,0.4,0.4,1,0,1.4C13.5,15.9,13.3,16,13,16z" />
 const inclusioPinkColor = '#ca3f64';
 
 let changes = false;
+let readyForPublish = false;
 
 const backend_url = `http://localhost:3000`
 
@@ -177,6 +178,28 @@ body{
 .extension-header .discardBtn:hover{
     color: white;
     background: ${inclusioPinkColor};
+}
+
+.extension-header .publishBtn{
+    background-color: ${inclusioPinkColor};
+    color: white;
+    transition: .2s all;
+    padding: 5px 15px;
+    cursor: pointer;
+    border-radius: 9999px;
+    font-size: 1.4em;
+    maring-left: 20px;
+}
+
+.extension-header .publishBtn:hover{
+    background-color: white;
+    border: 2px solid ${inclusioPinkColor};
+    color: ${inclusioPinkColor};
+}
+
+
+.extension-header .publishBtn.hidden{
+    display: none;
 }
 
 .extension-header .saveBtn{
@@ -436,8 +459,10 @@ function savePage(pageUrl, altText){
                     //hide save and discard btns
 
                     changes = true;
-                    document.querySelector('.extension-header .discard-and-save-btn-container')
-                    .classList.add('hidden');
+                    document.querySelector('.extension-header .discard-and-save-btn-container').classList.add('hidden');
+
+                    document.querySelector('.extension-header .publishBtn').classList.remove('hidden');
+
                 }else if(response.status == 401){
                     alter("You don't have permission to executi this operation")
                 }else{
@@ -450,6 +475,35 @@ function savePage(pageUrl, altText){
                 console.log(error);
             })
         }
+    })
+}
+
+function publishPage(){
+    return new Promise(function (resolve, reject) {
+        const pageUrl = trimQueryParamsFromUrl(window.location.href);
+        getUser()
+        .then(user=>{
+            const token = user.token;
+            fetch(`${backend_url}/publish-page`, {
+                method: "POST",
+                body: JSON.stringify({
+                    pageUrl,
+                }),
+                headers:{
+                    'Content-Type': 'application/json',
+                    Authorization: token
+                }
+    
+            }).then(response=> response.json())
+            .then(response =>{
+                if(response.status == 200){
+                    resolve(response.payload)
+                }else{
+                    alert('Error getting page data');
+                    console.log(response);
+                }
+            })
+        })
     })
 }
 
@@ -467,6 +521,9 @@ function extensionStatusChange(extStatus, role){
                 <div class="discardBtn">Discard Changes</div>
                 <div class="vr"></div>
                 <div class="saveBtn">Save Changes</div>
+            </div>
+            <div class="publishBtn hidden">
+                Publish Page
             </div>
             `
             header.classList = "extension-header"
@@ -547,10 +604,19 @@ function extensionStatusChange(extStatus, role){
             setTimeout(() =>{
                 const discardBtn = document.querySelector('.extension-header .discardBtn')
                 const saveBtn = document.querySelector('.extension-header .saveBtn')
+                const publishBtn = document.querySelector('.extension-header .publishBtn')
 
                 discardBtn.addEventListener('click', function(){
                     changes = false;
                     window.location.reload();
+                })
+
+                publishBtn.addEventListener('click', ()=>{
+                    changes = false;
+                    publishPage()
+                    .then(_ =>{
+                        alert('Page successfully published!')
+                    });
                 })
 
                 const saveFnWithThrottle = throttle(function(){
@@ -597,6 +663,8 @@ function extensionStatusChange(extStatus, role){
         
         for(const imgSrc in images_alt_text){
             const image = images.find(img => img.src == imgSrc);
+            
+            if(!image) continue;
             
             image.alt = images_alt_text[imgSrc]
         }
@@ -813,7 +881,7 @@ function injectGalleryJavascript() {
 
         changes = true;
         document.querySelector('.extension-header .discard-and-save-btn-container').classList.remove('hidden')
-
+        document.querySelector('.extension-header .publishBtn').classList.add('hidden')
         selectedImgRef.alt = textarea.value;
         updateImageBorder(selectedImgRef);
     }, 500);
