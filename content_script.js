@@ -463,6 +463,7 @@ function throttle (callback, limit) {
 function savePage(pageUrl, altText){
     chrome.storage.sync.get('user', function (result) {
         const user = result['user']
+        console.log(user)
         if(!user || !user.token){
             alert("You have to be logged in to perform this operation!");
             return;

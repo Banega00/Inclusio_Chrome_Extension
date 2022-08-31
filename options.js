@@ -93,7 +93,7 @@ function register(username, password, role){
             switch (response.status) {
                 case 201:
                     const decodedJwt = parseJwt(response.payload.token)
-                    chrome.storage.sync.set({ user: { username: decodedJwt.username, role: decodedJwt.role, token: decodedJwt.token } }, () => {
+                    chrome.storage.sync.set({ user: { username: decodedJwt.username, role: decodedJwt.role, token: response.payload.token } }, () => {
                         window.location.reload();
                     })
                 break;
