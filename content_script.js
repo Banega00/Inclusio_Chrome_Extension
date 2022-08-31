@@ -655,21 +655,22 @@ function extensionStatusChange(extStatus, role){
 
     //for both roles update image alt texts
 
-
-    getPage()
-    .then(({ page, requested}) => {
-        const images_alt_text = page.images_alt_text;
-        let images = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
-        
-        for(const imgSrc in images_alt_text){
-            const image = images.find(img => img.src == imgSrc);
+    if(extStatus){
+        getPage()
+        .then(({ page, requested}) => {
+            const images_alt_text = page.images_alt_text;
+            let images = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
             
-            if(!image) continue;
-            
-            image.alt = images_alt_text[imgSrc]
-        }
-    })
-    .catch(console.log())
+            for(const imgSrc in images_alt_text){
+                const image = images.find(img => img.src == imgSrc);
+                
+                if(!image) continue;
+                
+                image.alt = images_alt_text[imgSrc]
+            }
+        })
+        .catch(console.log)
+    }
 }
 
 function changeImageAltTextInStorage(imgSrc, newAltText){
