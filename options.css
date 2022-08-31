@@ -18,3 +18,11 @@
 .profile-info-div.hidden{
     display: none;
 }
+
+.register-div > *{
+    margin-bottom: 10px;
+}
+
+.login-div > *{
+    margin-bottom: 10px;
+}
