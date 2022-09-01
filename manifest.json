@@ -27,6 +27,7 @@
     }
   ],
   "icons": {
+    "64": "assets/logo.png"
   },
   "action": {
     "default_icon": {
