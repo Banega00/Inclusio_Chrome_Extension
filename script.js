@@ -243,7 +243,7 @@ function fetchRequestedPagesPeriodically() {
     getRequestedPages()
         .then(pagesArray => {
             while (sitesContainer.firstChild) {
-                myNode.removeChild(myNode.lastChild);
+                sitesContainer.removeChild(sitesContainer.lastChild);
             }
             pagesArray.forEach(requestedPage => {
                 const pageDiv = `
@@ -260,7 +260,7 @@ function fetchRequestedPagesPeriodically() {
         getRequestedPages()
             .then(pagesArray => {
                 while (sitesContainer.firstChild) {
-                    myNode.removeChild(myNode.lastChild);
+                    sitesContainer.removeChild(sitesContainer.lastChild);
                 }
                 pagesArray.forEach(requestedPage => {
                     const pageDiv = `
@@ -282,7 +282,7 @@ getCurrentTab()
         chrome.storage.sync.get('user', function (result) {
             const user = result.user;
 
-            getPage(pageUrl, user.username)
+            getPage(pageUrl, user?.username)
             .then(({page, requested}) => {
 
                 if (!user || !user.username || !user.role) {

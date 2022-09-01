@@ -438,7 +438,7 @@ function getPage(){
             if(response.status == 200){
                 resolve(response.payload)
             }else if(response.status == 404){
-                resolve({})
+                resolve({page:{}, requested:{}})
             }else{
                 alert('Error getting page data');
                 console.log(response);
@@ -453,7 +453,7 @@ Promise.all([getUser(), getExtensionStatus()])
     const [user, status] = userAndStatus;
     
     if(status){
-        extensionStatusChange(status, user.role, true)
+        extensionStatusChange(status, user?.role, true)
     }
 })
 
@@ -549,7 +549,8 @@ function extensionStatusChange(extStatus, role, showNotification){
     if(extStatus){
         getPage()
         .then(({ page, requested}) => {
-            const images_alt_text = page.images_alt_text;
+            const images_alt_text = page?.images_alt_text ?? {};
+
             let images = Array.from(document.querySelectorAll('img:not(.gallery-img)'));
             
             for(const imgSrc in images_alt_text){
@@ -595,7 +596,7 @@ function extensionStatusChange(extStatus, role, showNotification){
                     wrapperControls.classList.add('wrapper-controls')
                     let imageStatusMessage = ''
 
-                            const altText = images_alt_text[img.src]
+                            const altText = images_alt_text[img.src] ?? img.alt;
                             if (!altText.trim()) {
                                 wrapper.classList.add('no-alt-text')
                                 imageStatusMessage = `${noDescriptionSvg} No Description`
@@ -1030,7 +1031,7 @@ function keyPress(e) {
                         [currentPageUrl]: true
                     }
     
-                    chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role, true))
+                    chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user?.role, true))
                 } else {
                     if (typeof extStatus != 'object') extStatus = {};
     
@@ -1039,11 +1040,11 @@ function keyPress(e) {
                     if (currentPageExtStatus == undefined) {
     
                         extStatus[currentPageUrl] = true;
-                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role, true))
+                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user?.role, true))
                         return;
                     } else {
                         extStatus[currentPageUrl] = !currentPageExtStatus
-                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user.role, true))
+                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user?.role, true))
                         return;
                     }
     
