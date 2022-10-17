@@ -29,47 +29,49 @@ function trimQueryParamsFromUrl(url) {
 
 const extStatusSwitch = document.getElementById('ext-status-switch')
 if (extStatusSwitch) {
-    extStatusSwitch.addEventListener('change', function (event) {
-
-        getCurrentTab().then(function (tab) {
-            const currentPageUrl = trimQueryParamsFromUrl(tab.url)
-
-            chrome.storage.sync.get('ext-status', function (result) {
-                let extStatus = result['ext-status'];
-
-                if (extStatus == undefined) { //extension status is totally empty
-                    extStatus = {
-                        [currentPageUrl]: true
-                    }
-
-                    chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
-                    showExtStatus(true);
-                } else {
-                    if (typeof extStatus != 'object') extStatus = {};
-
-                    const currentPageExtStatus = extStatus[currentPageUrl];
-
-                    if (currentPageExtStatus == undefined) {
-
-                        extStatus[currentPageUrl] = true;
-                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
-                        showExtStatus(true)
-                        return;
-                    } else {
-                        const newStatus = event.target.checked
-                        extStatus[currentPageUrl] = newStatus
-                        chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
-                        showExtStatus(newStatus);
-                        return;
-                    }
-
-                }
-            })
-
-        });
-    })
+    extStatusSwitch.addEventListener('change', changeExtStatus)
 } else {
     console.error("EXT SWITCH NOT FOUND")
+}
+
+function changeExtStatus() {
+
+    getCurrentTab().then(function (tab) {
+        const currentPageUrl = trimQueryParamsFromUrl(tab.url)
+
+        chrome.storage.sync.get('ext-status', function (result) {
+            let extStatus = result['ext-status'];
+
+            if (extStatus == undefined) { //extension status is totally empty
+                extStatus = {
+                    [currentPageUrl]: true
+                }
+
+                chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
+                showExtStatus(true);
+            } else {
+                if (typeof extStatus != 'object') extStatus = {};
+
+                const currentPageExtStatus = extStatus[currentPageUrl];
+
+                if (currentPageExtStatus == undefined) {
+
+                    extStatus[currentPageUrl] = true;
+                    chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
+                    showExtStatus(true)
+                    return;
+                } else {
+                    const newStatus = extStatusSwitch.checked
+                    extStatus[currentPageUrl] = newStatus
+                    chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
+                    showExtStatus(newStatus);
+                    return;
+                }
+
+            }
+        })
+
+    });
 }
 
 function showExtStatus(status) {
@@ -89,7 +91,8 @@ getCurrentTab().then(function (tab) {
     //send extension status only if true
     chrome.storage.sync.get('ext-status', function (result) {
         const extStatus = result['ext-status']
-        if(extStatus[currentPageUrl] == true){
+
+        if(extStatus && extStatus[currentPageUrl] == true){
             getAndSendExtStatus(currentPageUrl)
         }else{
             showExtStatus(false);
@@ -179,7 +182,7 @@ function requestPage(){
     getCurrentTab()
     .then(tab => {
         const pageUrl = trimQueryParamsFromUrl(tab.url);
-
+        const pageTitle = tab.title;
         chrome.storage.sync.get('user', function (result) {
             const user = result.user;
 
@@ -190,13 +193,15 @@ function requestPage(){
 
             fetch(`${backend_url}/request-page`,{
                 method: 'POST',
-                body: JSON.stringify({ pageUrl }),
+                body: JSON.stringify({ pageUrl, pageTitle }),
                 headers:{
                     Authorization: user.token,
                     'Content-Type': 'application/json'
                 }
             })
             .then(response =>{
+                if(!response.ok) throw new Error(response.statusText);
+
                 alert("You've successfully requested this page to be processed by our team")
                 window.location.reload()
             })
@@ -249,7 +254,7 @@ function fetchRequestedPagesPeriodically() {
                 const pageDiv = `
                             <div class="requested-site">
                                 <div class="num-of-requests">${requestedPage.requests}</div>
-                                <a class="site" href="${requestedPage.page.page_url}">${requestedPage.page.page_url}</a>
+                                <a class="site" href="${requestedPage.page.page_url}">${requestedPage.page.page_title}</a>
                             </div>`
                 sitesContainer.insertAdjacentHTML('beforeend', pageDiv)
             })
@@ -339,6 +344,18 @@ getCurrentTab()
 
     })
 
+
+function keyPress(e) {
+    var evtobj = window.event ? event : e
+
+
+    if (evtobj.keyCode == 90 && evtobj.ctrlKey) {//CTRL + Z
+        extStatusSwitch.checked = !extStatusSwitch.checked;
+        changeExtStatus();
+    }
+}
+
+document.onkeydown = keyPress;
 // chrome.storage.sync.get('role', function (result) {
     
 // })

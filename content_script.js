@@ -1053,25 +1053,27 @@ function keyPress(e) {
         })
     }else if(evtobj.keyCode == 88 && evtobj.ctrlKey){//CTRL + X
         const currentPageUrl = trimQueryParamsFromUrl(window.location.href);
+        const pageTitle = document.title;
+        
         chrome.storage.sync.get('ext-status', function (result) {
             let extStatus = result['ext-status'];
 
             if(extStatus[currentPageUrl] == true){
-                requestPage(currentPageUrl);
+                requestPage(currentPageUrl, pageTitle);
 
             }
         })
     }
 }
 
-function requestPage(pageUrl){
+function requestPage(pageUrl, pageTitle){
     chrome.storage.sync.get('user', function (result) {
         const user = result.user;
         if(!user || !user.token) return;
 
         fetch(`${backend_url}/request-page`,{
             method: 'POST',
-            body: JSON.stringify({ pageUrl }),
+            body: JSON.stringify({ pageUrl, pageTitle:'Wikipedija - Srbija' }),
             headers:{
                 Authorization: user.token,
                 'Content-Type': 'application/json'
