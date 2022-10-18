@@ -14,12 +14,97 @@ chrome.storage.sync.get('user', function(result){
         signUpDiv.classList.remove('hidden')
         profileInfoDiv.classList.add('hidden')
     }else{
+        console.log(user)
+        profileInfoDiv.querySelector('.username-div').innerHTML = `${user.role}: ${user.username}`;
 
-        profileInfoDiv.querySelector('div').innerHTML = `${user.role}: ${user.username}`;
+        let preferencesHtml = ``;
+        if(user.role == 'Volunteer'){
+            preferencesHtml = `
+                <div>
+                    Mail preferences
+                    <hr>
+                    <div>
+                        <input class="form-check-input" type="checkbox" id="checkbox-onPageRequest" ${user.preferences.receiveMail.onPageRequest == true ? "checked" : ""}>
+                        <label class="form-check-label" for="checkbox-onPageRequest">Send mail for request for your page improvements</label>
+                    </div>
+                    <hr>
+                    <button id="save-preferences-btn" type="button" class="btn btn-success">Save preferences</button>
+                </div>
+            `
+        }else if(user.role == 'Consumer'){
+            preferencesHtml = `
+            <div>
+                Mail preferences
+                <hr>
+                <div>
+                    <input class="form-check-input" type="checkbox" id="checkbox-onPageRequest" ${user.preferences.receiveMail.onPageRequest == true ? "checked" : ""}>
+                    <label class="form-check-label" for="checkbox-onPageRequest">Send mail for request for your page improvements</label>
+                </div>
+                <div>
+                    <input class="form-check-input" type="checkbox" id="checkbox-onRequestedPagePublished" ${user.preferences.receiveMail.onRequestedPagePublished == true ? "checked" : ""}>
+                    <label class="form-check-label" for="checkbox-onRequestedPagePublished">Send mail when page you've requested is published</label>
+                </div>
+                <hr>
+                <button id="save-preferences-btn" type="button" class="btn btn-success">Save preferences</button>
+            </div>
+        `
+        }
+
+        setInterval(()=>{
+            document.getElementById('save-preferences-btn').addEventListener('click', savePreferences)
+        }, 100)
+
+        profileInfoDiv.querySelector('.preferences').innerHTML = preferencesHtml;
+
         signUpDiv.classList.add('hidden')
         profileInfoDiv.classList.remove('hidden')
     }
 })
+
+function savePreferences(){
+    const preferences = { receiveMail: {}}
+
+    const onRequestedPagePublished = document.getElementById('checkbox-onRequestedPagePublished')?.checked;
+    const onPageRequest = document.getElementById('checkbox-onPageRequest')?.checked;
+
+
+    if(onPageRequest != undefined){
+        preferences.receiveMail.onPageRequest = onPageRequest;
+    }
+
+    if(onRequestedPagePublished != undefined){
+        preferences.receiveMail.onRequestedPagePublished = onRequestedPagePublished;
+    }
+
+    chrome.storage.sync.get('user', function (result) {
+        const user = result.user;
+        const token = user.token;
+
+        console.log("Stavljam token:", token)
+        fetch(`${backend_url}/preferences`, { method: 'PUT', body: JSON.stringify(preferences), headers: { 'Content-Type': 'application/json', Authorization: token } })
+            .then(response => response.json())
+            .then(response => {
+                switch (response.status) {
+                    case 200:
+                        const decodedJwt = parseJwt(response.payload.token)
+                        chrome.storage.sync.set({ user: { username: decodedJwt.username, role: decodedJwt.role, preferences: decodedJwt.preferences, token: response.payload.token } }, () => {
+                            window.location.reload();
+                            alert(`Preferences successfully saved!`)
+                        })
+
+                        break;
+                    default:
+                        responseMsgDiv.innerHTML = `Error occured`
+                        break;
+                }
+            })
+            .catch(error => {
+                responseMsgDiv.innerHTML = `Error occured`
+                console.log(error)
+            })
+
+    })
+}
 
 signOutBtn.addEventListener('click', () =>{
     chrome.storage.sync.remove('user', () =>{
@@ -63,7 +148,8 @@ function login(username, password){
             switch (response.status) {
                 case 200:
                     const decodedJwt = parseJwt(response.payload.token)
-                    chrome.storage.sync.set({ user: { username: decodedJwt.username, role: decodedJwt.role, token: response.payload.token } }, () => {
+                    console.log(decodedJwt)
+                    chrome.storage.sync.set({ user: { username: decodedJwt.username, role: decodedJwt.role, preferences: decodedJwt.preferences, token: response.payload.token } }, () => {
                         window.location.reload();
                     })
                 break;
@@ -94,7 +180,7 @@ function register(username, password, email, role){
             switch (response.status) {
                 case 201:
                     const decodedJwt = parseJwt(response.payload.token)
-                    chrome.storage.sync.set({ user: { username: decodedJwt.username, role: decodedJwt.role, token: response.payload.token } }, () => {
+                    chrome.storage.sync.set({ user: { username: decodedJwt.username, role: decodedJwt.role, preferences: decodedJwt.preferences, token: response.payload.token } }, () => {
                         window.location.reload();
                     })
                 break;
