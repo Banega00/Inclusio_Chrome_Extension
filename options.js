@@ -37,9 +37,10 @@ loginBtn.addEventListener('click', ()=>{
 registerBtn.addEventListener('click', ()=>{
     const username = document.querySelector('.register-div #username').value;
     const password = document.querySelector('.register-div #password').value;
+    const email = document.querySelector('.register-div #email').value;
     const role = document.querySelector('.register-div #roles').value;
 
-    register(username, password, role)
+    register(username, password, email, role)
 })
 
 
@@ -86,8 +87,8 @@ function login(username, password){
     })
 }
 
-function register(username, password, role){
-    fetch(`${backend_url}/register`, {method: 'POST', body: JSON.stringify({username, password, role}), headers:{'Content-Type': 'application/json'}, credentials: 'same-origin'})
+function register(username, password, email, role){
+    fetch(`${backend_url}/register`, {method: 'POST', body: JSON.stringify({username, password, email, role}), headers:{'Content-Type': 'application/json'}, credentials: 'same-origin'})
     .then(response => response.json())
         .then(response => {
             switch (response.status) {
