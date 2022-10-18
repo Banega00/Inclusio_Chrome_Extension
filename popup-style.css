@@ -54,7 +54,7 @@ body{
     color: var(--page-covered-status-color)
 }
 
-.page_status-div.not-covered{
+.page_status-div.not-covered, .page_status-div .not-covered{
     color: white;
     background-color: var(--page-not-covered-status-color);
     border-radius: 9999px;
@@ -62,7 +62,7 @@ body{
     transition: all .2s;
 }
 
-.page_status-div.not-covered:hover{
+.page_status-div.not-covered:hover, .page_status-div .not-covered:hover{
     color: var(--page-not-covered-status-color);
     background-color: white;
     border: 2px solid var(--page-not-covered-status-color);

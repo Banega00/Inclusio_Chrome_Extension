@@ -307,7 +307,6 @@ getCurrentTab()
                     displayUsername(user.username)
     
                 } else if (user.role == 'Consumer') {
-    
                     userInfoDiv.classList.add('hidden');//user info div shown only for volunteer
                     
                     //if page doesen't exists in database that means it is not covered
@@ -320,19 +319,26 @@ getCurrentTab()
                             pageStatusDiv.classList.remove('request-sent', 'not-covered')
                             pageStatusDiv.classList.add('covered')
                             pageStatusDiv.removeEventListener('click', requestPage)
+                            
+                            //add request for improvements div
+                            const requestForImprovementsDiv = document.createElement('div');
+                            requestForImprovementsDiv.classList.add('not-covered');
+                            requestForImprovementsDiv.innerHTML = `Request for improvements`;
+                            pageStatusDiv.appendChild(requestForImprovementsDiv);
+                            requestForImprovementsDiv.addEventListener('click', requestPage)
                             break;
                         case 'Not_Covered':
-                            pageStatusDiv.innerHTML = pageNotCoveredtext;
-                            pageStatusDiv.classList.remove('request-sent', 'covered')
-                            pageStatusDiv.classList.add('not-covered')
-                            pageStatusDiv.addEventListener('click', requestPage)
+                            if (requested) {//if not covered - but requested
+                                pageStatusDiv.innerHTML = requestSentText;
+                                pageStatusDiv.classList.remove('covered', 'not-covered')
+                                pageStatusDiv.classList.add('request-sent')
+                            }else{
+                                pageStatusDiv.innerHTML = pageNotCoveredtext;
+                                pageStatusDiv.classList.remove('request-sent', 'covered')
+                                pageStatusDiv.classList.add('not-covered')
+                                pageStatusDiv.addEventListener('click', requestPage)
+                            }
                             break;
-                    }
-
-                    if (requested) {
-                        pageStatusDiv.innerHTML = requestSentText;
-                        pageStatusDiv.classList.remove('covered', 'not-covered')
-                        pageStatusDiv.classList.add('request-sent')
                     }
                 }
             })
