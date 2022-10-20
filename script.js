@@ -254,7 +254,7 @@ function fetchRequestedPagesPeriodically() {
                 const pageDiv = `
                             <div class="requested-site">
                                 <div class="num-of-requests">${requestedPage.requests}</div>
-                                <a class="site" href="${requestedPage.page.page_url}">${requestedPage.page.page_title}</a>
+                                <a class="site" target="_blank"href="${requestedPage.page.page_url}">${requestedPage.page.page_title}</a>
                             </div>`
                 sitesContainer.insertAdjacentHTML('beforeend', pageDiv)
             })
@@ -271,7 +271,7 @@ function fetchRequestedPagesPeriodically() {
                     const pageDiv = `
                             <div class="requested-site">
                                 <div class="num-of-requests">${requestedPage.requests}</div>
-                                <a class="site" href="${requestedPage.page.page_url}">${requestedPage.page.page_url}</a>
+                                <a class="site" target="_blank" href="${requestedPage.page.page_url}">${requestedPage.page.page_title}</a>
                             </div>`
                     sitesContainer.insertAdjacentHTML('beforeend', pageDiv)
                 })
