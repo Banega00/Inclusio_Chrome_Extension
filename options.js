@@ -38,7 +38,7 @@ chrome.storage.sync.get('user', function(result){
                 <hr>
                 <div>
                     <input class="form-check-input" type="checkbox" id="checkbox-onPageRequest" ${user.preferences.receiveMail.onPageRequest == true ? "checked" : ""}>
-                    <label class="form-check-label" for="checkbox-onPageRequest">Send mail for request for your page improvements</label>
+                    <label class="form-check-label" for="checkbox-onPageRequest">Send mail to confirm that you requested a page to be processed</label>
                 </div>
                 <div>
                     <input class="form-check-input" type="checkbox" id="checkbox-onRequestedPagePublished" ${user.preferences.receiveMail.onRequestedPagePublished == true ? "checked" : ""}>

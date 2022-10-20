@@ -41,7 +41,29 @@
             <div class="username-div"></div>
         </div>
     </div>
-
+    <dialog class="hidden" id="reportDialog" open=false>
+        Do you want to report image descriptions for this page?
+        <b>Please, tell us why?</b>
+        <hr>
+        <div class="reasons">
+            <div>
+                <input type="checkbox" name="reason-1" id="reasons1">
+                <label for="reason1">Content is offensive</label>
+            </div>
+            <div>
+                <input type="checkbox" name="reason-2" id="reasons2">
+                <label for="reason1">Content is imprecise</label>
+            </div>
+            <div>
+                <label for="reason1">Something else?</label>
+                <input type="textarea" name="reason-3" id="reasons3">
+            </div>
+        </div>
+        <div class="buttons">
+            <div class="report-btn">Report</div>
+            <div class="cancel-btn">Cancel</div>
+        </div>
+    </dialog>
     <script src="script.js"></script>
     <script type="text/javascript" src="./bootstrap-5.0.2-dist/js/bootstrap.min.js"></script>
 </body>

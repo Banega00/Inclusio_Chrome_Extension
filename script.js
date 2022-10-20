@@ -1,6 +1,7 @@
 const userInfoDiv = document.querySelector('.user-info-div');
 const pageStatusDiv = document.querySelector('.page_status-div');
 const sitesContainer = document.querySelector('.sites-container');
+const reportDialog = document.querySelector('dialog#reportDialog');
 
 const pageCoveredText = `This page is already covered`;
 const pageNotCoveredtext = `Request for Volunteers to Interpret`;
@@ -319,13 +320,25 @@ getCurrentTab()
                             pageStatusDiv.classList.remove('request-sent', 'not-covered')
                             pageStatusDiv.classList.add('covered')
                             pageStatusDiv.removeEventListener('click', requestPage)
-                            
+
+                            const improvementsAndReportContainer = document.createElement('div');
+                            improvementsAndReportContainer.classList.add('improvementsAndReportContainer');
+                            pageStatusDiv.appendChild(improvementsAndReportContainer);
+
                             //add request for improvements div
                             const requestForImprovementsDiv = document.createElement('div');
                             requestForImprovementsDiv.classList.add('not-covered');
                             requestForImprovementsDiv.innerHTML = `Request for improvements`;
-                            pageStatusDiv.appendChild(requestForImprovementsDiv);
+                            improvementsAndReportContainer.appendChild(requestForImprovementsDiv);
                             requestForImprovementsDiv.addEventListener('click', requestPage)
+
+                            const reportDiv = document.createElement('div');
+                            reportDiv.classList.add('not-covered');
+                            reportDiv.innerHTML = `Report`;
+                            improvementsAndReportContainer.appendChild(reportDiv);
+                            reportDiv.addEventListener('click', openReportDialog)
+
+                            
                             break;
                         case 'Not_Covered':
                             if (requested) {//if not covered - but requested
@@ -350,6 +363,24 @@ getCurrentTab()
 
     })
 
+function reportPage(){
+    //SEND REPORT
+
+    closeReportDialog()
+}
+
+function openReportDialog(){
+    reportDialog.classList.remove('hidden');
+
+}
+
+function closeReportDialog(){
+    reportDialog.classList.add('hidden');
+
+}
+
+reportDialog.querySelector('.buttons .report-btn').addEventListener('click', reportPage)
+reportDialog.querySelector('.buttons .cancel-btn').addEventListener('click', closeReportDialog)
 
 function keyPress(e) {
     var evtobj = window.event ? event : e
