@@ -364,9 +364,62 @@ getCurrentTab()
     })
 
 function reportPage(){
-    //SEND REPORT
 
-    closeReportDialog()
+    getCurrentTab()
+        .then(tab => {
+            const pageUrl = trimQueryParamsFromUrl(tab.url);
+
+            chrome.storage.sync.get('user', function (result) {
+                const user = result.user;
+
+                const reasons = [];
+
+                //offensive content
+                const reason1 = document.querySelector('#reason1')?.checked;
+                if(reason1) reasons.push(`Offensive content`)
+                const reason2 = document.querySelector('#reason2')?.checked;
+                if(reason2) reasons.push(`Imprecise content`)
+
+                const reason3 = document.querySelector('#reason3').value;
+                if(reason3?.trim()) reasons.push(reason3)
+
+                sendReportPageRequest(pageUrl, user, reasons)
+                .then(res =>{
+                    alert('Report sent successfully!')
+                    closeReportDialog();
+                })
+                .catch(error => {
+                    console.log(error);
+                    alert('Error sending report')
+                })
+            })
+        })
+}
+
+function sendReportPageRequest(pageUrl, user, reasons){
+    return new Promise(function (resolve, reject) {
+        fetch(`${backend_url}/report`, {
+            method: "POST",
+            body: JSON.stringify({
+                pageUrl, reasons
+            }),
+            headers: {
+                Authorization: user.token,
+                'Content-Type': 'application/json',
+            }
+
+        }).then(response => response.json())
+            .then(response => {
+                if (response.status == 200) {
+                    resolve()
+                } else {
+                    console.log(response);
+                }
+            })
+            .catch(error => {
+                reject(error)
+            })
+    })
 }
 
 function openReportDialog(){

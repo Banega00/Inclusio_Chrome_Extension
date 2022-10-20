@@ -540,6 +540,8 @@ function publishPage(){
                     alert('Error getting page data');
                     console.log(response);
                 }
+            }).catch(error => {
+                reject(error);
             })
         })
     })
@@ -663,6 +665,10 @@ function extensionStatusChange(extStatus, role, showNotification){
                         publishPage()
                         .then(_ =>{
                             alert('Page successfully published!')
+                            toggleGallery(false)
+                        }).catch(error=>{
+                            alert('Error publishing page')
+                            
                         });
                     })
     
