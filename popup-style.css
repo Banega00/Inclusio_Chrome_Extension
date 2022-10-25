@@ -159,12 +159,12 @@ dialog.hidden{
     display: none;
 }
 
-dialog .buttons{
+dialog#reportDialog .buttons{
     display: flex;
     margin-top: auto;
 }
 
-dialog .buttons > div{
+dialog#reportDialog .buttons > div{
     padding: 5px 10px;
     margin: 10px;
     justify-content: space-evenly;
@@ -175,7 +175,53 @@ dialog .buttons > div{
     transition: 0.2s all;
 }
 
-dialog .buttons > div:hover{
+dialog#reportDialog .buttons > div:hover{
     background-color: white;
     color: var(--main-font-color);
+}
+/* ////////////////////////////////// */
+
+dialog#rankListDialog{
+    padding: 0;
+    padding-bottom: 4rem;
+}
+
+dialog#rankListDialog .title{
+    font-size: 1.8rem;
+    color: #A79197;
+    padding:0 1rem;
+}
+
+dialog#rankListDialog p.description{
+    font-size: 1.2rem;
+    color: var(--request-sent);
+    padding:0 1rem;
+}
+
+dialog#rankListDialog div.volunteers-container{
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+    height: 100%;
+}
+
+dialog#rankListDialog div.volunteers-container .volunteer:nth-child(even){
+    background-color: rgb(239, 238, 238);
+}
+
+dialog#rankListDialog div.volunteers-container .volunteer{
+    display: flex;
+    padding: 0.2rem 0.5rem;
+}
+
+dialog#rankListDialog div.volunteers-container .volunteer .index{
+    margin-right: 1rem;
+}
+
+dialog#rankListDialog div.volunteers-container .volunteer .username{
+    flex: 1;
+}
+
+dialog#rankListDialog div.volunteers-container .points{
+    color: var(--main-font-color);
+    font-weight: bold;
 }

@@ -324,6 +324,8 @@ let selectedImgRef = undefined;
 
 let galleryImagesArray = [];
 
+let addedAltTexts = {}
+
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         switch(request.message){
@@ -473,17 +475,16 @@ function throttle (callback, limit) {
 function savePage(pageUrl, altText){
     chrome.storage.sync.get('user', function (result) {
         const user = result['user']
-        console.log(user)
         if(!user || !user.token){
             alert("You have to be logged in to perform this operation!");
             return;
         }else{
-
             fetch(`${backend_url}/page`, {
                 method: 'PUT',
                 body: JSON.stringify({
                     pageUrl,
-                    altText
+                    altText,
+                    addedAltTexts
                 }),
                 headers:{
                     'Content-Type': 'application/json',
@@ -511,6 +512,9 @@ function savePage(pageUrl, altText){
             .catch(error=>{
                 alert('Error saving page');
                 console.log(error);
+            })
+            .finally(()=>{
+                addedAltTexts = {}
             })
         }
     })
@@ -945,6 +949,9 @@ function injectGalleryJavascript() {
         document.querySelector('.extension-header .discard-and-save-btn-container').classList.remove('hidden')
         document.querySelector('.extension-header .publishBtn').classList.add('hidden')
         selectedImgRef.alt = textarea.value;
+
+        addedAltTexts[selectedImgRef.src] = textarea.value;
+
         updateImageBorder(selectedImgRef);
     }, 500);
 
