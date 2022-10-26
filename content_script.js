@@ -165,6 +165,15 @@ body{
     align-items: flex-end;
 }
 
+@font-face {
+    font-family: 'Quicksand';
+    src: URL('${backend_url}/assets/quicksand.ttf') format('truetype');
+  }
+
+.extension-header{
+    font-family: Quicksand
+}
+
 .extension-header .selected-image.has-alt-text{
     color: #2DC257;
 }
@@ -472,7 +481,7 @@ function throttle (callback, limit) {
     }
 }
 
-function savePage(pageUrl, altText){
+function savePage(pageUrl, pageTitle, altText){
     chrome.storage.sync.get('user', function (result) {
         const user = result['user']
         if(!user || !user.token){
@@ -484,6 +493,7 @@ function savePage(pageUrl, altText){
                 body: JSON.stringify({
                     pageUrl,
                     altText,
+                    pageTitle,
                     addedAltTexts
                 }),
                 headers:{
@@ -540,6 +550,7 @@ function publishPage(){
             .then(response =>{
                 if(response.status == 200){
                     resolve(response.payload)
+                    document.querySelector('.extension-header .publishBtn').classList.add('hidden')
                 }else{
                     alert('Error getting page data');
                     console.log(response);
@@ -684,8 +695,8 @@ function extensionStatusChange(extStatus, role, showNotification){
                             altText[img.src] = img.alt;
                         })
                         const pageUrl = trimQueryParamsFromUrl(window.location.href);
-    
-                        savePage(pageUrl, altText)
+                        const pageTitle = document.title;
+                        savePage(pageUrl, pageTitle, altText)
                     },200)
     
                     saveBtn.addEventListener('click', saveFnWithThrottle)
@@ -948,9 +959,11 @@ function injectGalleryJavascript() {
         changes = true;
         document.querySelector('.extension-header .discard-and-save-btn-container').classList.remove('hidden')
         document.querySelector('.extension-header .publishBtn').classList.add('hidden')
+
+        addedAltTexts[selectedImgRef.src] = textarea.value.length - selectedImgRef.alt.length;
+
         selectedImgRef.alt = textarea.value;
 
-        addedAltTexts[selectedImgRef.src] = textarea.value;
 
         updateImageBorder(selectedImgRef);
     }, 500);
@@ -1043,7 +1056,7 @@ function keyPress(e) {
                     extStatus = {
                         [currentPageUrl]: true
                     }
-    
+                    launchSound_turned_on();
                     chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user?.role, true))
                 } else {
                     if (typeof extStatus != 'object') extStatus = {};
@@ -1053,10 +1066,17 @@ function keyPress(e) {
                     if (currentPageExtStatus == undefined) {
     
                         extStatus[currentPageUrl] = true;
+                        launchSound_turned_on();
                         chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user?.role, true))
                         return;
                     } else {
                         extStatus[currentPageUrl] = !currentPageExtStatus
+
+                        if(extStatus[currentPageUrl]){
+                            launchSound_turned_on();
+                        }else{
+                            launchSound_turned_off();
+                        }
                         chrome.storage.sync.set({ 'ext-status': extStatus }, () => extensionStatusChange(extStatus[currentPageUrl], user?.role, true))
                         return;
                     }
@@ -1079,6 +1099,16 @@ function keyPress(e) {
     }
 }
 
+function launchSound_turned_on(){
+    let audio = new Audio(`${backend_url}/assets/sounds/test.wav`);
+    audio.play();
+}
+
+function launchSound_turned_off(){
+    let audio = new Audio(`${backend_url}/assets/sounds/test.wav`);
+    audio.play();
+}
+
 function requestPage(pageUrl, pageTitle){
     chrome.storage.sync.get('user', function (result) {
         const user = result.user;
@@ -1086,7 +1116,7 @@ function requestPage(pageUrl, pageTitle){
 
         fetch(`${backend_url}/request-page`,{
             method: 'POST',
-            body: JSON.stringify({ pageUrl, pageTitle:'Wikipedija - Srbija' }),
+            body: JSON.stringify({ pageUrl, pageTitle }),
             headers:{
                 Authorization: user.token,
                 'Content-Type': 'application/json'

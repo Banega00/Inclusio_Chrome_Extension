@@ -20,7 +20,7 @@ chrome.storage.sync.get('user', function(result){
         let preferencesHtml = ``;
         if(user.role == 'Volunteer'){
             preferencesHtml = `
-                <div>
+                <div class="mail-preferences-div">
                     Mail preferences
                     <hr>
                     <div>
@@ -33,7 +33,7 @@ chrome.storage.sync.get('user', function(result){
             `
         }else if(user.role == 'Consumer'){
             preferencesHtml = `
-            <div>
+            <div class="mail-preferences-div">
                 Mail preferences
                 <hr>
                 <div>

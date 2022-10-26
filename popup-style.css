@@ -190,6 +190,17 @@ dialog#rankListDialog .title{
     font-size: 1.8rem;
     color: #A79197;
     padding:0 1rem;
+    display: flex;
+}
+
+dialog#rankListDialog .title img{
+    margin-right: 0.5rem;
+}
+
+dialog#rankListDialog .title .closeBtn{
+    margin-left: auto;
+    cursor: pointer;
+    transition: all .2s;
 }
 
 dialog#rankListDialog p.description{
@@ -201,7 +212,9 @@ dialog#rankListDialog p.description{
 dialog#rankListDialog div.volunteers-container{
     border-top: 1px solid black;
     border-bottom: 1px solid black;
+    max-height: 100%;
     height: 100%;
+    overflow: auto;
 }
 
 dialog#rankListDialog div.volunteers-container .volunteer:nth-child(even){
@@ -224,4 +237,18 @@ dialog#rankListDialog div.volunteers-container .volunteer .username{
 dialog#rankListDialog div.volunteers-container .points{
     color: var(--main-font-color);
     font-weight: bold;
+}
+
+.ranklist-btn{
+    margin-top: 0.5rem;
+    font-size: 1.2rem;
+    color: #A79197;
+    cursor: pointer;
+    transition: all .2s;
+    margin-left: auto;
+
+}
+
+.ranklist-btn:hover{
+    text-decoration: underline;
 }

@@ -2,6 +2,10 @@ const userInfoDiv = document.querySelector('.user-info-div');
 const pageStatusDiv = document.querySelector('.page_status-div');
 const sitesContainer = document.querySelector('.sites-container');
 const reportDialog = document.querySelector('dialog#reportDialog');
+const rankListDialog = document.querySelector('dialog#rankListDialog');
+const volunteersContainer = document.querySelector('dialog#rankListDialog .volunteers-container');
+const rankListBtn = document.querySelector('.ranklist-btn')
+let rankListInterval;
 
 const pageCoveredText = `This page is already covered`;
 const pageNotCoveredtext = `Request for Volunteers to Interpret`;
@@ -47,9 +51,10 @@ function changeExtStatus() {
                 extStatus = {
                     [currentPageUrl]: true
                 }
-
+                
                 chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
                 showExtStatus(true);
+                launchSound_turned_on();
             } else {
                 if (typeof extStatus != 'object') extStatus = {};
 
@@ -60,12 +65,19 @@ function changeExtStatus() {
                     extStatus[currentPageUrl] = true;
                     chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
                     showExtStatus(true)
+                    launchSound_turned_on();
                     return;
                 } else {
                     const newStatus = extStatusSwitch.checked
                     extStatus[currentPageUrl] = newStatus
                     chrome.storage.sync.set({ 'ext-status': extStatus }, () => getAndSendExtStatus(currentPageUrl))
                     showExtStatus(newStatus);
+
+                    if(newStatus){
+                        launchSound_turned_on();
+                    }else{
+                        launchSound_turned_off();
+                    }
                     return;
                 }
 
@@ -73,6 +85,16 @@ function changeExtStatus() {
         })
 
     });
+}
+
+function launchSound_turned_on(){
+    let audio = new Audio("/assets/sounds/test.wav");
+    audio.play();
+}
+
+function launchSound_turned_off(){
+    let audio = new Audio("/assets/sounds/test.wav");
+    audio.play();
 }
 
 function showExtStatus(status) {
@@ -133,6 +155,8 @@ function sendExtensionStatusToContentScript(status) {
         let role;
         if (!user || !user.username || !user.role) {
             role = 'Consumer'
+
+            rankListBtn.style.display = 'none'
         } else {
             role = user.role;
         }
@@ -449,3 +473,68 @@ document.onkeydown = keyPress;
 // chrome.storage.sync.get('role', function (result) {
     
 // })
+
+document.querySelector('.ranklist-btn').addEventListener('click',()=>{
+    toggleRankListDialog(true);
+    fetchAndRenderRankList();
+
+    rankListInterval = setInterval(fetchAndRenderRankList,30000)
+})
+
+function fetchAndRenderRankList(){
+    fetchRankList().then(volunteers=>{
+        volunteersContainer.innerHTML = '';
+        setTimeout(()=>{
+            let i = 1;
+            for(const volunteer of volunteers){
+                const volunteerDiv = document.createElement('div');
+                volunteerDiv.classList.add('volunteer')
+                volunteerDiv.innerHTML = `
+                <div class="index">${i++}</div>
+                <div class="username">
+                    ${volunteer.username}
+                </div>
+                <div class="points">${volunteer.points} points</div>
+                `
+
+                volunteersContainer.appendChild(volunteerDiv)
+            }
+        },1)
+
+    })
+}
+
+function toggleRankListDialog(open){
+    if(open){
+        rankListDialog.classList.remove('hidden')
+    }else{
+        rankListDialog.classList.add('hidden')
+    }
+}
+
+document.querySelector('#rankListDialog .closeBtn').addEventListener('click', ()=>{
+    toggleRankListDialog(false);
+    clearInterval(rankListInterval);
+})
+
+function fetchRankList(){
+    return new Promise(function (resolve, reject) {
+        fetch(`${backend_url}/rank-list`, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+
+        }).then(response => response.json())
+            .then(response => {
+                if (response.status == 200) {
+                    resolve(response.payload)
+                } else if (response.status == 404) {
+                    resolve()
+                } else {
+                    alert('Error getting page data');
+                    console.log(response);
+                }
+            })
+    })
+}
+

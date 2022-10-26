@@ -40,6 +40,11 @@
             <div class="role-div"></div>
             <div class="username-div"></div>
         </div>
+
+        <div class="ranklist-btn">
+            <img class="ranklist-img" src="assets/rank-list.svg" alt="" srcset="">
+            Rank List 
+        </div>
     </div>
     <dialog class="hidden" id="reportDialog" open=false>
         Do you want to report images descriptions for this page?
@@ -65,45 +70,23 @@
         </div>
     </dialog>
     <!-- <dialog class="hidden" id="rankListDialog" open=true> -->
-    <dialog id="rankListDialog" open=true>
+    <dialog class="hidden" id="rankListDialog" open=false>
         <div class="title">
             <img class="ranklist-img" src="assets/rank-list.svg" alt="" srcset="">
-            Rank List 
+            <div>
+                Rank List 
+            </div>
+
+            <div class="closeBtn"><img src="assets/close.svg" alt=""></div>
         </div>
         <p class="description">Points given per alt text interpreted</p>
 
         <div class="volunteers-container">
-            <div class="volunteer">
-                <div class="index">1.</div>
-                <div class="username">
-                    Volunteer2
-                </div>
-                <div class="points">3450 points</div>
-            </div>
-            <div class="volunteer">
-                <div class="index">1.</div>
-                <div class="username">
-                    Volunteer2
-                </div>
-                <div class="points">3450 points</div>
-            </div>
-            <div class="volunteer">
-                <div class="index">1.</div>
-                <div class="username">
-                    Volunteer2
-                </div>
-                <div class="points">3450 points</div>
-            </div>
-            <div class="volunteer">
-                <div class="index">1.</div>
-                <div class="username">
-                    Volunteer2
-                </div>
-                <div class="points">3450 points</div>
-            </div>
+            
         </div>
         
     </dialog>
+    
     <script src="script.js"></script>
     <script type="text/javascript" src="./bootstrap-5.0.2-dist/js/bootstrap.min.js"></script>
 </body>
