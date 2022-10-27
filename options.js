@@ -5,7 +5,7 @@ const registerBtn = document.querySelector('#register-btn')
 const signOutBtn = document.querySelector('#sign-out-btn')
 const responseMsgDiv = document.querySelector('.response-msg-div')
 
-const backend_url = `http://34.68.13.255:3000`
+const backend_url = `https://680e-34-68-13-255.ngrok.io`
 
 chrome.storage.sync.get('user', function(result){
     
