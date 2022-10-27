@@ -194,10 +194,12 @@ body{
 
 .extension-header .discard-and-save-btn-container{
     display: flex;
+    font-weight:bold;
 }
 
 .extension-header .discard-and-save-btn-container.hidden{
     visibility: hidden;
+    font-weight:bold;
 }
 
 .extension-header .discardBtn{
@@ -223,6 +225,7 @@ body{
     border-radius: 9999px;
     font-size: 1.4em;
     maring-left: 20px;
+    font-weight:bold;
 }
 
 .extension-header .publishBtn:hover{
@@ -713,7 +716,7 @@ function extensionStatusChange(extStatus, role, showNotification){
             showExtensionStatusMessage(true);//true means on
         }
     }else{
-        //EXTENSION TURNED OF
+        //EXTENSION TURNED OFF
         if( role == "Volunteer"){
             const extHeader = document.querySelector('.extension-header');
             
@@ -722,13 +725,13 @@ function extensionStatusChange(extStatus, role, showNotification){
                     showExtensionStatusMessage(false)
                 }
 
-                setTimeout(() => window.location.reload(),500)
+                setTimeout(() => window.location.reload(),3200)
             }
         } else if (role == "Consumer") {
             if (showNotification) {
                 showExtensionStatusMessage(false)
             }
-            setTimeout(() => window.location.reload(), 500)
+            setTimeout(() => window.location.reload(), 3200)
         }
     }
     
@@ -1100,12 +1103,12 @@ function keyPress(e) {
 }
 
 function launchSound_turned_on(){
-    let audio = new Audio(`${backend_url}/assets/sounds/test.wav`);
+    let audio = new Audio(`${backend_url}/assets/sounds/on.mp3`);
     audio.play();
 }
 
 function launchSound_turned_off(){
-    let audio = new Audio(`${backend_url}/assets/sounds/test.wav`);
+    let audio = new Audio(`${backend_url}/assets/sounds/off.mp3`);
     audio.play();
 }
 

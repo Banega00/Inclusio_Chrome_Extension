@@ -88,12 +88,12 @@ function changeExtStatus() {
 }
 
 function launchSound_turned_on(){
-    let audio = new Audio("/assets/sounds/test.wav");
+    let audio = new Audio("/assets/sounds/on.mp3");
     audio.play();
 }
 
 function launchSound_turned_off(){
-    let audio = new Audio("/assets/sounds/test.wav");
+    let audio = new Audio("/assets/sounds/off.mp3");
     audio.play();
 }
 
