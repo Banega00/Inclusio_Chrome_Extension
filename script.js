@@ -10,7 +10,7 @@ let rankListInterval;
 const pageCoveredText = `This page is already covered`;
 const pageNotCoveredtext = `Request for Volunteers to Interpret`;
 const requestSentText = `Request sent, waiting for volunteers`;
-const backend_url = `http://localhost:3000`
+const backend_url = `http://34.68.13.255:3000`
 
 //OPTIONS BTN
 document.querySelector('.options-btn').addEventListener('click',()=>{

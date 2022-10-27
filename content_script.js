@@ -41,7 +41,7 @@ const inclusioPinkColor = '#ca3f64';
 let changes = false;
 let readyForPublish = false;
 
-const backend_url = `http://localhost:3000`
+const backend_url = `http://34.68.13.255:3000`
 
 const galleryCSS= `
 .galleryDiv.hidden{

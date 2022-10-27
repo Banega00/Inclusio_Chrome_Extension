@@ -5,7 +5,7 @@ const registerBtn = document.querySelector('#register-btn')
 const signOutBtn = document.querySelector('#sign-out-btn')
 const responseMsgDiv = document.querySelector('.response-msg-div')
 
-const backend_url = `http://localhost:3000`
+const backend_url = `http://34.68.13.255:3000`
 
 chrome.storage.sync.get('user', function(result){
     
