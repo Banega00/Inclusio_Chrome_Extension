@@ -42,6 +42,8 @@ if (extStatusSwitch) {
 function changeExtStatus() {
 
     getCurrentTab().then(function (tab) {
+        console.log(tab)
+
         const currentPageUrl = trimQueryParamsFromUrl(tab.url)
 
         chrome.storage.sync.get('ext-status', function (result) {
